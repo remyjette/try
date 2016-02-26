@@ -1,0 +1,19 @@
+opam-version: "1.2"
+name: "pa_ounit"
+version: "112.35.00.3110"
+maintainer: "opensource@janestreet.com"
+authors: "Jane Street Group, LLC <opensource@janestreet.com>"
+homepage: "https://github.com/janestreet/pa_ounit"
+bug-reports: "https://github.com/janestreet/pa_ounit/issues"
+dev-repo: "https://github.com/janestreet/pa_ounit.git"
+build: [make]
+install: [make "install"]
+remove: ["ocamlfind" "remove" "pa_ounit"]
+depends: [
+  "camlp4"
+  "ocamlfind"
+  "type_conv" {>= "109.53.00" & < "112.02.00"}
+  "ounit"
+  "ocamlbuild" {build}
+]
+available: [ocaml-version >= "4.02.1" & ocaml-version < "4.03"]
