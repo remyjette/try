@@ -9,7 +9,7 @@ $(function() {
     formData.append('test-file', $('#test-file')[0].files[0]);
 
     $.ajax({
-      url : '/test',
+      url : 'test/',
       type : 'POST',
       data : formData,
       processData: false,  // tell jQuery not to process the data

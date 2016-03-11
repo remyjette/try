@@ -1,20 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="//code.jquery.com/jquery-2.2.1.js"></script>
-  <script src="{{ url_for('static', filename='autograder.js') }}"></script>
-  <link rel=stylesheet type="text/css" href="{{ url_for('static', filename='style.css') }}" />
-  <title>Autograde your code!</title>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block body %}
   <div class="header centertext">
     Autograde your code!
   </div>
+
+  {% for course in courses %}
+  <div><a href="/{{ course.name }}/">{{ course.name }}</a></div>
+  {% endfor %}
+
+  {% if course %}
+  <hr />
+  <div class="header centertext">
+    {{course.name}}
+  </div>
+  {% for assignment in course.assignments %}
+  <div><a href="/{{assignment.course.name}}/{{ assignment.name }}/">{{ assignment.name }}</a></div>
+  {% endfor %}
+  {% endif %}
+
+  {% if assignment %}
+  <div class="header centertext">
+    {{assignment.name}}
+  </div>
   <div id="upload_section">
-    <input type="file" name="test-file" id="test-file" />
+    <input type="file" name="test-file" id="submission" />
     <input type="button" name="submit" id="submit" value="Test!" />
   </div>
   <div id="summary"></div>
   <div id="results"></div>
-</body>
-</html>
+  {% endif %}
+{% endblock %}
