@@ -7,9 +7,10 @@
     <form name="new_course_form" action="" method="POST">
       Add new course:
       <input type="text" name="new_course_name" />
-      <input type="submit" name="submit" id="submit" value="Add Course" />
+      <input type="submit" name="submit" value="Add Course" />
     </form>
   </div>
+  <div class="header">Courses:</div>
   {% for course in courses %}
   <div><a href="/admin/{{ course.name }}/">{{ course.name }}</a></div>
   {% endfor %}
@@ -20,13 +21,27 @@
     {{course.name}}
   </div>
   <div>
+    <div class="header">Edit Course</div>
+      <form name="edit_course_form" action="" method="POST">
+      <p>
+        Course Name:<br />
+        <input type="text" name="course_name" value="{{course.name}}" />
+      </p>
+      <p>
+        Student list:<br />
+        <textarea rows="15" cols="20" name="student_list">{% for student in course.student_list %}{{student}}&#13;&#10;{% endfor %}</textarea>
+      </p>
+      <input type="submit" name="submit" value="Save" />
+    </form>
+  <div>
     <form name="new_assignment_form" action="" method="POST" enctype="multipart/form-data">
-      Add new assignment:<br />
+      <div class="header">Add new assignment:</div>
       Assignment Name: <input type="text" name="new_assignment_name" /><br />
       Release Code (optional): <input type="file" name="release-code" id="release-code" />
-      <input type="submit" name="submit" id="submit" value="Add Assignment" />
+      <input type="submit" name="submit" value="Add Assignment" />
     </form>
-  </div>
+  </div><br /><br />
+  <div class="header">Assignments:</div>
   {% for assignment in course.assignments %}
   <div><a href="/admin/{{assignment.course.name}}/{{ assignment.name }}/">{{ assignment.name }}</a></div>
   {% endfor %}
@@ -42,11 +57,23 @@
       Add new test file:
       <input type="file" name="test-file" id="test-file" />
       <input type="hidden" name="testfile_name" value="" />
-      <input type="submit" name="submit" id="submit" value="Add New Test File" />
+      <input type="submit" name="submit" value="Add New Test File" />
     </form>
   </div>
   {% for testfile in assignment.testfiles %}
   <div>{{ testfile.filename }}</div>
+  <form action="" method="POST">
+  <input type="hidden" name="testfile_id" value="{{testfile.id}}" />
+  {% for unittest in testfile.unittests %}
+  <div>
+    Test: <input type="text" name="name_{{unittest.id}}" value="{{unittest.friendly_name}}" /><br />
+    Weight: <input type="number" name="weight_{{unittest.id}}" value="{{unittest.weight}}" /><br />
+    Is Public: <input type="checkbox" name="public_{{unittest.id}}" {% if unittest.is_public %}checked{% endif %}
+  </div>
+  {% endfor %}
+  <br />
+  <input type="submit" name="modify_unittests" value="Save" />
+  </form>
   {% endfor %}
   {% endif %}
 {% endblock %}

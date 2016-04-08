@@ -13,7 +13,10 @@ def cd(newdir):
     os.chdir(prevdir)
 
 def get_file_extension(filename):
-  return filename.rsplit('.', 1)[1]
+  try:
+    return filename.rsplit('.', 1)[1]
+  except IndexError:
+    return None
 
 def save_or_extract(file, target):
   if get_file_extension(file.filename) == "zip":

@@ -11,6 +11,8 @@ RUN opam pin add async 112.35.00
 #Get qcheck, necessary for 3110 tools
 RUN opam pin add qcheck 0.4
 
+RUN opam pin add yojson 1.3.2
+
 #Install 3110 tools
 RUN [ -d 3110-tools ] || git clone https://github.com/cs3110/tools.git 3110-tools \
   && eval `opam config env` \
@@ -37,4 +39,4 @@ RUN . env/bin/activate; pip install flask
 
 EXPOSE 8000
 
-ENTRYPOINT . env/bin/activate; python3.5 grade.py
+ENTRYPOINT . env/bin/activate; eval `opam config env`; python3.5 grade.py

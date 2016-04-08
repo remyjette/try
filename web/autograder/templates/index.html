@@ -4,9 +4,11 @@
     Autograde your code!
   </div>
 
+  <div class="header">Courses:</div>
   {% for course in courses %}
-  <div><a href="/{{ course.name }}/">{{ course.name }}</a></div>
+  <div style="margin-left: 25px"><a href="/{{ course.name }}/">{{ course.name }}</a></div>
   {% endfor %}
+
 
   {% if course %}
   <hr />
@@ -14,7 +16,8 @@
     {{course.name}}
   </div>
   {% for assignment in course.assignments %}
-  <div><a href="/{{assignment.course.name}}/{{ assignment.name }}/">{{ assignment.name }}</a></div>
+  <div class="header">Assignment:</div>
+  <div style="margin-left: 25px"><a href="/{{assignment.course.name}}/{{ assignment.name }}/">{{ assignment.name }}</a></div>
   {% endfor %}
   {% endif %}
 

@@ -48,6 +48,10 @@ table {
 }
 
 /** END CSS RESET **/
+body {
+  margin:20px;
+  font-family: 'Open Sans', sans-serif;
+}
 
 .header {
   font-size: 150%;

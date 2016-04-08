@@ -5,6 +5,11 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 
 app = Flask(__name__)
+
+import autograder.secret_key
+
+app.config['OCAML_GRADER_SERVERS'] = ['http://localhost:8000']
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath("autograder.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config["TESTFILE_DIR"] = os.path.abspath("test_files")
