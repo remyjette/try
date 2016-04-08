@@ -53,6 +53,12 @@
     {{assignment.name}}
   </div>
   <div>
+    <form name="grade_assignment" action="grade/" method="POST" enctype="multipart/form-data">
+    Grade {{assignment.name}} (upload submissions.zip):
+    <input type="file" name="submissions_archive" />
+    <input type="submit" name="grade_assignment" value="Grade" />
+  </div>
+  <div>
     <form name="add_test_file_form" action="" method="POST" enctype="multipart/form-data">
       Add new test file:
       <input type="file" name="test-file" id="test-file" />

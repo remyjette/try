@@ -2,6 +2,7 @@ from autograder import app, db
 from autograder.models import Course, Assignment, Testfile, Unittest
 from flask import render_template, request, session, redirect, url_for, abort
 from flask_sqlalchemy import SQLAlchemy
+from autograder.grade_assignment import grade_assignment
 from werkzeug import secure_filename
 import json
 import shlex
@@ -44,7 +45,7 @@ def test(course_name, assignment_name):
     submission.save(os.path.join(tempdir, secure_filename(submission.filename)))
 
     results = {testfile.filename: testfile.grade(
-        os.path.join(tempdir, secure_filename(submission.filename))
+        [os.path.join(tempdir, secure_filename(submission.filename))]
       )
       for testfile in assignment.testfiles}
 
@@ -142,6 +143,27 @@ def admin(course_name=None, assignment_name=None):
   courses = Course.query.all()
   return render_template("admin.html", courses=courses, course=course, assignment=assignment)
 
+@app.route("/admin/<course_name>/<assignment_name>/grade/", methods=["GET", "POST"])
+def grade_submissions(course_name=None, assignment_name=None):
+  if "username" not in session:
+    return redirect(url_for('login'))
+
+  if course_name is None:
+    return abort(400)
+
+  course = Course.query.filter_by(name=course_name).first()
+
+  if course is None:
+    return abort(404)
+
+  if not course.can_modify(session["username"]):
+    return abort(403)
+
+  assignment = course.assignments.filter_by(name=assignment_name).first()
+
+  submissions_archive = request.files['submissions_archive']
+
+  return json.dumps(grade_assignment(assignment, submissions_archive))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

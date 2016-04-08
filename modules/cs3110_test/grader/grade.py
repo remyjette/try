@@ -25,9 +25,11 @@ def grade():
         release = request.files['release']
         save_or_extract(release, tempdir)
 
-      if 'submission' in request.files:
-        submission = request.files['submission']
+      i = 0
+      while 'submission' + str(i) in request.files:
+        submission = request.files['submission' + str(i)]
         save_or_extract(submission, tempdir)
+        i += 1
 
       t = request.files['test_file']
       test_filename = secure_filename(t.filename)

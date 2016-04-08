@@ -62,17 +62,21 @@ class Testfile(db.Model):
     self.filename = filename
     self.assignment = assignment
 
-  def grade(self, submission_file):
+  def grade(self, submission_files, public_only=True):
     test_code = open(self.filename, 'rb')
     release_code = open(self.assignment.release_code_file, 'rb')
-    submission = open(submission_file, 'rb')
 
     docker_server = random.choice(app.config['OCAML_GRADER_SERVERS'])
 
     files = {'test_file': test_code}
 
-    if submission is not None:
-      files['submission'] = submission
+    i = 0
+    for submission_file in submission_files:
+      submission = open(submission_file, 'rb')
+      if submission is not None:
+        files['submission' + str(i)] = submission
+        i += 1
+
     if release_code is not None:
       files['release'] = release_code
 
@@ -87,7 +91,7 @@ class Testfile(db.Model):
           continue
         unittest = self.unittests.filter_by(name=result["name"]).first()
         result["name"] = unittest.friendly_name
-        if unittest.is_public:
+        if not public_only or unittest.is_public:
           yield result
 
     return list(public_results(results))
