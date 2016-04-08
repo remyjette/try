@@ -17,6 +17,7 @@ class Assignment(db.Model):
   description = db.Column(db.String(200))
   course_id = db.Column(db.Integer, db.ForeignKey("course.id"))
   course = db.relationship("Course", backref=db.backref("assignments", lazy="dynamic"))
+  release_filename = db.Column(db.String(64))
 
   def __init__(self, name, description, course):
     self.name = name
@@ -32,10 +33,8 @@ class Assignment(db.Model):
     return os.path.join(app.config["TESTFILE_DIR"], self.directory_name)
 
   @property
-  def release_code_dir(self):
-    return os.path.join(app.config["RELEASECODE_DIR"], self.directory_name)
-
-
+  def release_code_file(self):
+    return os.path.join(app.config["RELEASECODE_DIR"], self.release_code_dir, self.release_file_name)
 
 class Testfile(db.Model):
   id = db.Column(db.Integer, primary_key = True)
@@ -46,3 +45,8 @@ class Testfile(db.Model):
   def __init__(self, filename, assignment):
     self.filename = filename
     self.assignment = assignment
+
+  @property
+  def path(self):
+    return os.path.join(self.assignment.testfile_dir, self.filename)
+

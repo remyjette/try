@@ -1,7 +1,7 @@
-from autograder import app
-from grader import grade
-from models import Course, Assignment, Testfile
-from util import cd, get_file_extension, save_or_extract
+from autograder import app, db
+from autograder.grader import grade
+from autograder.models import Course, Assignment, Testfile
+from autograder.util import save_or_extract
 from flask import render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import secure_filename
@@ -10,10 +10,7 @@ import shlex
 import subprocess
 import tempfile
 import os
-import shutil
 import zipfile
-
-views = Blueprint("views", __name__)
 
 @app.route("/")
 @app.route("/<course_name>/")
@@ -37,10 +34,13 @@ def test(course_name, assignment_name):
 
   submission = request.files['submission']
 
-  results = {testfile.filename: grade(submission, testfile, assignment.release_code_dir)
-    for testfile in assignment.testfiles}
+  with tempfile.TemporaryDirectory() as tempdir:
+    save_or_extract(submission, tempdir)
 
-  return json.dumps(results)
+    results = {testfile.filename: grade(tempdir, testfile, assignment.release_code_dir)
+      for testfile in assignment.testfiles}
+
+    return json.dumps(results)
 
 @app.route("/admin/", methods=["GET", "POST"])
 @app.route("/admin/<course_name>/", methods=["GET", "POST"])
@@ -63,9 +63,9 @@ def admin(course_name=None, assignment_name=None):
       db.session.commit()
 
       try:
-        os.makedirs(assignment.release_code_dir, exist_ok=True)
+        os.makedirs(new_assignment.release_code_dir, exist_ok=True)
         f = request.files['release-code']
-        save_or_extract(f)
+        save_or_extract(f, new_assignment.release_code_dir)
       except:
         db.session.delete(new_assignment)
         db.session.commit()

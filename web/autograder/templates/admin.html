@@ -45,5 +45,8 @@
       <input type="submit" name="submit" id="submit" value="Add New Test File" />
     </form>
   </div>
+  {% for testfile in assignment.testfiles %}
+  <div>{{ testfile.filename }}</div>
+  {% endfor %}
   {% endif %}
 {% endblock %}
