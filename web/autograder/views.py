@@ -61,6 +61,9 @@ def test(course_name, assignment_name):
 @app.route("/admin/<course_name>/", methods=["GET", "POST"])
 @app.route("/admin/<course_name>/<assignment_name>/", methods=["GET", "POST"])
 def admin(course_name=None, assignment_name=None):
+  #TODO: remove this once CUWebAuth and admin lists are set
+  if request.remote_addr not in ["68.175.150.201", "::ffff:192.168.1.7"]:
+    return redirect(url_for('login'))
   if "username" not in session:
     return redirect(url_for('login'))
 
@@ -186,6 +189,7 @@ def login():
         return redirect(url_for('index'))
     return '''
       <form action="" method="post">
+        Please provide your NetID:
         <p><input type="text" name="username">
         <p><input type="submit" value="Login">
       </form>

@@ -22,7 +22,7 @@
 
 #Ajax-ify 'the all submissions', maybe make it have a progress bar?
 
-#Add timeouts to the docker container
+
 
 #Make another module or two (PyUnit, JUnit?)
 
@@ -30,6 +30,9 @@
 
 #Config file instead of configuration in __init__.py
 
+#Make some things configurable by course (such as container timeouts)
+
+#Allow download / upload of test weights
 
 
 from flask import Flask

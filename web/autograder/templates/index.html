@@ -15,8 +15,8 @@
   <div class="header centertext">
     {{course.name}}
   </div>
+    <div class="header">Assignments:</div>
   {% for assignment in course.assignments %}
-  <div class="header">Assignment:</div>
   <div style="margin-left: 25px"><a href="/{{assignment.course.name}}/{{ assignment.name }}/">{{ assignment.name }}</a></div>
   {% endfor %}
   {% endif %}
