@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
 from flask import Flask, request
-from util import cd, save_or_extract
 from distutils.dir_util import copy_tree
 from werkzeug import secure_filename
-import tempfile
-import shutil
+from contextlib import contextmanager
+import zipfile
 import os
 import shlex
-import shutil
 import subprocess
 import tempfile
 import json
@@ -38,11 +36,38 @@ def tester():
       test_file.writelines(paounit_json_response)
       test_file.close()
 
-      compiler = subprocess.run(shlex.split("cs3110 compile -p yojson " + test_filename), stdout = subprocess.PIPE)
+      compiler = subprocess.run(shlex.split("cs3110 compile -p yojson " + test_filename), stdout=subprocess.PIPE)
       if compiler.returncode != 0:
         return json.dumps([{'name': 'NO COMPILE', 'failed': True, "message": compiler.stdout.decode("utf-8")}])
-      tester = subprocess.run(shlex.split("cs3110 test " + test_filename), stdout = subprocess.PIPE, stderr = subprocess.DEVNULL)
+      try:
+        tester = subprocess.run(shlex.split("cs3110 test " + test_filename), timeout=60 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+      except subprocess.TimeoutExpired:
+        return json.dumps([{'name': 'TIMEOUT EXPIRED', 'failed': True, "message": "The timeout has expired."}])
       return tester.stdout.decode("utf-8")
+
+
+@contextmanager
+def cd(newdir):
+  prevdir = os.getcwd()
+  os.chdir(os.path.expanduser(newdir))
+  try:
+    yield
+  finally:
+    os.chdir(prevdir)
+
+def get_file_extension(filename):
+  try:
+    return filename.rsplit('.', 1)[1]
+  except IndexError:
+    return None
+
+def save_or_extract(file, target):
+  if get_file_extension(file.filename) == "zip":
+    release_archive = zipfile.ZipFile(file)
+    release_archive.extractall(target)
+  else:
+    file.save(os.path.join(target, secure_filename(file.filename)))
+
 
 if __name__ == "__main__":
   app.debug = True
