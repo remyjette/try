@@ -40,7 +40,7 @@ def tester():
       if compiler.returncode != 0:
         return json.dumps([{'name': 'NO COMPILE', 'failed': True, "message": compiler.stdout.decode("utf-8")}])
       try:
-        tester = subprocess.run(shlex.split("cs3110 test " + test_filename), timeout=60 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        tester = subprocess.run(shlex.split("cs3110 test " + test_filename), timeout=60, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
       except subprocess.TimeoutExpired:
         return json.dumps([{'name': 'TIMEOUT EXPIRED', 'failed': True, "message": "The timeout has expired."}])
       return tester.stdout.decode("utf-8")
