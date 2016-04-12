@@ -14,6 +14,13 @@ $(function() {
       contentType: false,
       success : function(data) {
         var response = JSON.parse(data);
+        if (response.error !== undefined) {
+          var summaryDiv = $("<div>")
+            .addClass("test_summary")
+            .html(response.error);
+            resultsDiv.append(summaryDiv);
+          return;
+        }
         _.each(response, function (results, testfile_name) {
           var totalPassed = results.reduce(function(acc, result) {return acc + (result.passed ? 1 : 0);}, 0);
           var summaryDiv = $("<div>")

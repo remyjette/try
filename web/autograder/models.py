@@ -1,4 +1,5 @@
 from autograder import app, db
+from flask import flash
 import json
 import os
 import requests
@@ -80,9 +81,20 @@ class Testfile(db.Model):
     if release_code is not None:
       files['release'] = release_code
 
-    r = requests.post(docker_server, files=files)
+    try:
+      r = requests.post(docker_server, files=files, verify="certs/ca.crt")
+    except requests.exceptions.ConnectionError:
+      error_message = "Error contacting grader host. Please contact an administrator."
+      flash(error_message, "error")
+      return []
 
-    results = json.loads(r.text)
+    print (r.text)
+    try:
+      results = json.loads(r.text)
+    except json.JSONDecodeError:
+      error_message = "Error decoding results. Please contact an administrator."
+      flash(error_message, "error")
+      return []
 
     def public_results(results):
       for result in results:

@@ -1,15 +1,17 @@
 from autograder import app, db
 from autograder.models import Course, Assignment, Testfile, Unittest
-from flask import render_template, request, session, redirect, url_for, abort
+from flask import render_template, request, session, redirect, url_for, abort, send_file
 from flask_sqlalchemy import SQLAlchemy
 from autograder.grade_assignment import grade_assignment
 from werkzeug import secure_filename
+import flask
 import json
 import shlex
 import subprocess
 import tempfile
 import os
 import zipfile
+import io
 
 @app.route("/")
 @app.route("/<course_name>/")
@@ -48,6 +50,10 @@ def test(course_name, assignment_name):
         [os.path.join(tempdir, secure_filename(submission.filename))]
       )
       for testfile in assignment.testfiles}
+
+    messages = flask.get_flashed_messages()
+    if messages:
+      return json.dumps({"error": messages[0]})
 
   return json.dumps(results)
 
@@ -163,7 +169,15 @@ def grade_submissions(course_name=None, assignment_name=None):
 
   submissions_archive = request.files['submissions_archive']
 
-  return json.dumps(grade_assignment(assignment, submissions_archive))
+  #TODO: explicitly close() csvfile
+  csv_filename = course.name + "_" + assignment.name + "_grades.csv"
+  csvfile = grade_assignment(assignment, submissions_archive)
+  return send_file(
+    csvfile.name,
+    mimetype="text/csv",
+    as_attachment=True,
+    attachment_filename=csv_filename
+  )
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
