@@ -18,7 +18,7 @@ app = Flask(__name__)
 paounit_json_response = open("paounit_json_response.ml", "rb").readlines()
 
 @app.route("/", methods=["POST"])
-def grade():
+def tester():
   with tempfile.TemporaryDirectory() as tempdir:
     with cd(tempdir):
       if 'release' in request.files:
