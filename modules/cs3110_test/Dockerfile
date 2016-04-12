@@ -48,4 +48,4 @@ RUN . env/bin/activate; pip install -r requirements.txt
 
 EXPOSE 443
 
-CMD . env/bin/activate; eval `opam config env`; gunicorn -D -w 4 -b unix:/tmp/gunicorn.sock tester:app; sudo service nginx start
+CMD . env/bin/activate; eval `opam config env`; ( gunicorn -w 4 -b unix:/tmp/gunicorn.sock tester:app & sudo service nginx start)
