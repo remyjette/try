@@ -55,7 +55,7 @@ class Assignment(db.Model):
 
 class Testfile(db.Model):
   id = db.Column(db.Integer, primary_key = True)
-  filename = db.Column(db.String(255), unique = True)
+  filename = db.Column(db.String(255))
   assignment_id = db.Column(db.Integer, db.ForeignKey("assignment.id"))
   assignment = db.relationship("Assignment", backref=db.backref("testfiles", lazy="dynamic"))
 
@@ -63,7 +63,7 @@ class Testfile(db.Model):
     self.filename = filename
     self.assignment = assignment
 
-  def grade(self, submission_files, public_only=True):
+  def grade(self, submission_files, public_only=True, return_all_results=False):
     test_code = open(self.filename, 'rb')
     release_code = open(self.assignment.release_code_file, 'rb')
 
@@ -71,12 +71,13 @@ class Testfile(db.Model):
 
     files = {'test_file': test_code}
 
-    i = 0
-    for submission_file in submission_files:
-      submission = open(submission_file, 'rb')
-      if submission is not None:
-        files['submission' + str(i)] = submission
-        i += 1
+    if submission_files is not None:
+      i = 0
+      for submission_file in submission_files:
+        submission = open(submission_file, 'rb')
+        if submission is not None:
+          files['submission' + str(i)] = submission
+          i += 1
 
     if release_code is not None:
       files['release'] = release_code
@@ -95,6 +96,9 @@ class Testfile(db.Model):
       error_message = "Error decoding results. Please contact an administrator."
       flash(error_message, "error")
       return []
+
+    if (return_all_results):
+      return results
 
     def public_results(results):
       for result in results:

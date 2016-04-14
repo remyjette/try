@@ -122,10 +122,9 @@ def admin(course_name=None, assignment_name=None):
 
         testfile = assignment.testfiles.first()
 
-        release_code_response = grade(
-          open(testfile.filename, 'rb'),
+        release_code_response = testfile.grade(
           None,
-          open(assignment.release_code_file, 'rb')
+          return_all_results=True
         )
 
         test_names = [result["name"] for result in release_code_response]
@@ -146,7 +145,6 @@ def admin(course_name=None, assignment_name=None):
             unittest.friendly_name = request.form[form_testname_field]
             unittest.weight = request.form[form_weight_field]
             unittest.is_public = form_public_field in request.form
-            #unittest.is_public = request.form["public_" + unittest.id]
         db.session.commit()
 
   courses = Course.query.all()
