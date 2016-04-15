@@ -88,6 +88,7 @@ class Testfile(db.Model):
       files['release'] = release_code
 
     try:
+      #TODO what if this happens on testupload or grade_all?
       r = requests.post(docker_server, files=files, verify="certs/ca.crt")
     except requests.exceptions.ConnectionError:
       error_message = "Error contacting grader host. Please contact an administrator."
