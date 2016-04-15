@@ -16,7 +16,7 @@ import itertools
 
 @app.before_request
 def before_request():
-  request.username = "rcj57"# request.headers["REQUEST_USER"]
+  request.username = request.headers["Remote-User"]
 
 @app.route("/")
 @app.route("/<course_name>/")
