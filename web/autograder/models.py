@@ -60,12 +60,16 @@ class Testfile(db.Model):
   assignment_id = db.Column(db.Integer, db.ForeignKey("assignment.id"))
   assignment = db.relationship("Assignment", backref=db.backref("testfiles", lazy="dynamic"))
 
+  @property
+  def path(self):
+      return os.path.join(self.assignment.testfile_dir, self.filename)
+
   def __init__(self, filename, assignment):
     self.filename = filename
     self.assignment = assignment
 
   def grade(self, submission_files, public_only=True, return_all_results=False):
-    test_code = open(self.filename, 'rb')
+    test_code = open(self.path, 'rb')
     release_code = open(self.assignment.release_code_file, 'rb')
 
     docker_server = random.choice(app.config['OCAML_GRADER_SERVERS'])
@@ -90,7 +94,6 @@ class Testfile(db.Model):
       flash(error_message, "error")
       return []
 
-    print (r.text)
     try:
       results = json.loads(r.text)
     except json.JSONDecodeError:
