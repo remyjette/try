@@ -3,6 +3,8 @@ $(function() {
 
   $("#submit").on("click", function() {
     resultsDiv.html("");
+    var loadingMessage = $("<div>").addClass("test_summary").html("Running tests...");
+    resultsDiv.append(loadingMessage);
     var formData = new FormData();
     formData.append('submission', $('#submission')[0].files[0]);
 
@@ -13,6 +15,7 @@ $(function() {
       processData: false,  // tell jQuery not to process the data
       contentType: false,
       success : function(data) {
+        resultsDiv.html("");
         var response = JSON.parse(data);
         if (response.error !== undefined) {
           var summaryDiv = $("<div>")
@@ -39,6 +42,16 @@ $(function() {
             resultsDiv.append(resultDiv);
           });
         });
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        resultsDiv.html("");
+        var resultDiv = $("<div>").addClass("failed").addClass("test_result");
+        var message = "The following error occurred while trying to run your tests:"
+          + "<br /><br />"
+          + errorThrown
+          + "<br /><br />This is a server error. Your code has not been run.";
+        resultDiv.html(message);
+        resultsDiv.html(resultDiv);
       }
     });
   });

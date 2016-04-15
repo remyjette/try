@@ -74,7 +74,7 @@ def test(course_name, assignment_name):
 @app.route("/admin/<course_name>/", methods=["GET", "POST"])
 @app.route("/admin/<course_name>/<assignment_name>/", methods=["GET", "POST"])
 def admin(course_name=None, assignment_name=None):
-  if request.username != "rcj57": #TODO allow admins
+  if request.username != "rcj57" and request.username != "mrc26": #TODO allow admins
     return abort(403)
 
   course = None

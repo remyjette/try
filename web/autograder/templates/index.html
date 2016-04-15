@@ -1,5 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
+<div id="container">
+  <header>
+  <h1>
+    Autograde your code!
+  </h1>
+
+  <div style="margin-top:15px;margin-left:auto;margin-right:auto;max-width:850px">
+    <p>Please note: This system only stores submitted files temporarily - they are
+    removed once all tests have been run.</p>
+    <p>Test results are stored for diagnostic and research purposes - information will only be disclosed in aggregate form and will not influence any grades.</p>
+  </div>
+  </header>
+  <div id="body">
+
   <h1>Courses:</h1>
   {% for course in courses %}
   <div style="margin-left: 25px"><a href="/{{ course.name }}/">{{ course.name }}</a></div>
@@ -27,4 +41,10 @@
   </div>
   <div id="results"></div>
   {% endif %}
+
+  </div>
+  <footer>
+    <a href="http://goo.gl/forms/zsmXsO7VMe" target="_blank">Your feedback is greatly appreciated - after using the autograder, we'd love to hear what you think!</a>
+  </footer>
+</div>
 {% endblock %}

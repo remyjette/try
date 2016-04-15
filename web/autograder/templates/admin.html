@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
-  <div class="header centertext">
-    Admin
-  </div>
+  <h1 class="centertext">
+    try.cs.cornell.edu - Admin
+  </h1>
   <div>
     <form name="new_course_form" action="" method="POST">
       Add new course:
@@ -10,18 +10,18 @@
       <input type="submit" name="submit" value="Add Course" />
     </form>
   </div>
-  <div class="header">Courses:</div>
+  <h1>Courses:</h1>
   {% for course in courses %}
   <div><a href="/admin/{{ course.name }}/">{{ course.name }}</a></div>
   {% endfor %}
 
   {% if course %}
   <hr />
-  <div class="header centertext">
+  <h1 class="centertext">
     {{course.name}}
-  </div>
+  </h1>
   <div>
-    <div class="header">Edit Course</div>
+    <h1>Edit Course</h1>
       <form name="edit_course_form" action="" method="POST">
       <p>
         Course Name:<br />
@@ -35,13 +35,13 @@
     </form>
   <div>
     <form name="new_assignment_form" action="" method="POST" enctype="multipart/form-data">
-      <div class="header">Add new assignment:</div>
+      <h1>Add new assignment:</h1>
       Assignment Name: <input type="text" name="new_assignment_name" /><br />
       Release Code (optional): <input type="file" name="release-code" id="release-code" />
       <input type="submit" name="submit" value="Add Assignment" />
     </form>
   </div><br /><br />
-  <div class="header">Assignments:</div>
+  <h1>Assignments:</h1>
   {% for assignment in course.assignments %}
   <div><a href="/admin/{{assignment.course.name}}/{{ assignment.name }}/">{{ assignment.name }}</a></div>
   {% endfor %}
@@ -49,9 +49,9 @@
 
   {% if assignment %}
   <hr />
-  <div class="header centertext">
+  <h1 class="centertext">
     {{assignment.name}}
-  </div>
+  </h1>
   <div>
     <form name="grade_assignment" action="grade/" method="POST" enctype="multipart/form-data">
     Grade {{assignment.name}} (upload submissions.zip):
