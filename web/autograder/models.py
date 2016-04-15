@@ -139,10 +139,11 @@ class Log(db.Model):
   tests_passed = db.column(db.Integer)
   total_tests = db.column(db.Integer)
   results = db.column(db.String())
-  timestamp = db.column(db.DateTime(), default=datetime.now())
+  timestamp = db.column(db.DateTime())
 
   def __init__(self, netid, tests_passed, total_tests, results):
     self.netid = netid
     self.tests_passed = tests_passed
     self.total_tests = total_tests
     self.results = results
+    self.timestamp = datetime.now()

@@ -30,7 +30,7 @@ def index(course_name = None, assignment_name = None):
     if course is not None and assignment_name is not None:
       assignment = course.assignments.filter_by(name=assignment_name).first()
 
-  courses = filter(lambda c: c.can_access(request.username), Course.query.all()
+  courses = filter(lambda c: c.can_access(request.username), Course.query.all())
   return render_template("index.html", courses=courses, course=course, assignment=assignment)
 
 @app.route("/<course_name>/<assignment_name>/test/", methods=["POST"])
@@ -57,8 +57,8 @@ def test(course_name, assignment_name):
       return json.dumps({"error": messages[0]})
 
     #log the response
-    test_bool_results [False if t["failed"] else True
-                        for t in itertools.chain.from_iterable(results)]
+    test_bool_results = [not t["failed"] for t in
+                          itertools.chain.from_iterable(results)]
     log = Log(
       request.username,
       len(filter(None, test_bool_results)),
@@ -74,7 +74,7 @@ def test(course_name, assignment_name):
 @app.route("/admin/<course_name>/", methods=["GET", "POST"])
 @app.route("/admin/<course_name>/<assignment_name>/", methods=["GET", "POST"])
 def admin(course_name=None, assignment_name=None):
-  if request.username != "rcj57"
+  if request.username != "rcj57": #TODO allow admins
     return abort(403)
 
   course = None
