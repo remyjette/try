@@ -18,7 +18,9 @@ class Course(db.Model):
     self.student_list = []
 
   def can_access(self, username):
-    return self.can_modify(username) or username in self.student_list
+    #todo restrict access
+    return True
+    #return self.can_modify(username) or username in self.student_list
 
   #TODO: Instructor/admin list
   def can_modify(self, username):
