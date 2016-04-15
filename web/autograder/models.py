@@ -140,10 +140,10 @@ class Unittest(db.Model):
 class Log(db.Model):
   id = db.Column(db.Integer, primary_key = True)
   netid = db.Column(db.String(20))
-  tests_passed = db.column(db.Integer)
-  total_tests = db.column(db.Integer)
-  results = db.column(db.String())
-  timestamp = db.column(db.DateTime())
+  tests_passed = db.Column(db.Integer)
+  total_tests = db.Column(db.Integer)
+  results = db.Column(db.String())
+  timestamp = db.Column(db.DateTime())
 
   def __init__(self, netid, tests_passed, total_tests, results):
     self.netid = netid
