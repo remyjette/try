@@ -1,5 +1,5 @@
 from autograder import app, db
-from autograder.models import Course, Assignment, Testfile, Unittest
+from autograder.models import Course, Assignment, Testfile, Unittest, Log
 from flask import render_template, request, session, redirect, url_for, abort, send_file
 from flask_sqlalchemy import SQLAlchemy
 from autograder.grade_assignment import grade_assignment
@@ -57,16 +57,16 @@ def test(course_name, assignment_name):
       return json.dumps({"error": messages[0]})
 
     #log the response
-    test_bool_results = [not t["failed"] for t in
-                          itertools.chain.from_iterable(results)]
+    test_bool_results = [t["passed"] for t in
+                          itertools.chain.from_iterable(results.values())]
     log = Log(
       request.username,
-      len(filter(None, test_bool_results)),
+      len(list(filter(None, test_bool_results))),
       len(test_bool_results),
       json.dumps(results)
     )
     db.session.add(log)
-    db.commit()
+    db.session.commit()
 
   return json.dumps(results)
 

@@ -150,3 +150,4 @@ class Log(db.Model):
     self.total_tests = total_tests
     self.results = results
     self.timestamp = datetime.now()
+
