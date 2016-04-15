@@ -26,9 +26,9 @@ def index(course_name = None, assignment_name = None):
   assignment = None
 
   if course_name is not None:
-    course = Course.query.filter_by(name=course_name).first()
+    course = Course.query.filter_by(name=course_name).first_or_404()
     if course is not None and assignment_name is not None:
-      assignment = course.assignments.filter_by(name=assignment_name).first()
+      assignment = course.assignments.filter_by(name=assignment_name).first_or_404()
 
   courses = filter(lambda c: c.can_access(request.username), Course.query.all())
   return render_template("index.html", courses=courses, course=course, assignment=assignment)
