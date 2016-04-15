@@ -52,10 +52,13 @@ body {
   margin:20px;
   font-family: 'Open Sans', sans-serif;
 }
-
+p {
+  margin-bottom:8px;
+}
 .header {
   font-size: 150%;
   padding-top:20px;
+  margin-bottom:10px;
 }
 .centertext {
   text-align: center
