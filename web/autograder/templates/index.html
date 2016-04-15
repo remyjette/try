@@ -1,16 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-  <div class="header centertext">
-    Autograde your code!
-  </div>
-
-  <div class="centertext" style="margin-top:15px;margin-left:auto;margin-right:auto;width:850px">
-    <p>Please note: This system only stores submitted files temporarily - they are
-    removed once all tests have been run.</p>
-    <p>Test results are stored for diagnostic and research purposes - information will only be disclosed in aggregate form and will not influence any grades.</p>
-  </div>
-
-  <div class="header">Courses:</div>
+  <h1>Courses:</h1>
   {% for course in courses %}
   <div style="margin-left: 25px"><a href="/{{ course.name }}/">{{ course.name }}</a></div>
   {% endfor %}
@@ -18,19 +8,19 @@
 
   {% if course %}
   <hr />
-  <div class="header centertext">
+  <h1 class="centertext">
     {{course.name}}
-  </div>
-    <div class="header">Assignments:</div>
+  </h1>
+    <h1>Assignments:</h1>
   {% for assignment in course.assignments %}
   <div style="margin-left: 25px"><a href="/{{assignment.course.name}}/{{ assignment.name }}/">{{ assignment.name }}</a></div>
   {% endfor %}
   {% endif %}
 
   {% if assignment %}
-  <div class="header centertext">
+  <h1 class="centertext">
     {{assignment.name}}
-  </div>
+  </h1>
   <div id="upload_section">
     <input type="file" name="test-file" id="submission" />
     <input type="button" name="submit" id="submit" value="Test!" />

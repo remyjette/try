@@ -10,6 +10,19 @@
 </head>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <body>
+<div id="container">
+  <header>
+  <h1>
+    Autograde your code!
+  </h1>
+
+  <div style="margin-top:15px;margin-left:auto;margin-right:auto;max-width:850px">
+    <p>Please note: This system only stores submitted files temporarily - they are
+    removed once all tests have been run.</p>
+    <p>Test results are stored for diagnostic and research purposes - information will only be disclosed in aggregate form and will not influence any grades.</p>
+  </div>
+  </header>
+  <div id="body">
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       <ul class=flashes>
@@ -20,5 +33,10 @@
     {% endif %}
   {% endwith %}
   {% block body %}{% endblock %}
+  </div>
+  <footer>
+    <a href="http://goo.gl/forms/zsmXsO7VMe" target="_blank">Your feedback is greatly appreciated - after using the autograder, we'd love to hear what you think!</a>
+  </footer>
+</div>
 </body>
 </html>

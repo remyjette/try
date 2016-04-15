@@ -48,14 +48,37 @@ table {
 }
 
 /** END CSS RESET **/
+html,body {
+  height: 100%
+}
 body {
-  margin:20px;
   font-family: 'Open Sans', sans-serif;
+  margin:0 20px;
+}
+
+#container{
+  min-height: 100%;
+  position:relative;
+}
+header {
+  text-align:center;
+  margin-bottom:40px;
+}
+#body{
+  padding-bottom: 150px;    /* height of footer */
+}
+footer{
+  text-align: center;
+  height: 150px;
+  width:100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
 }
 p {
   margin-bottom:8px;
 }
-.header {
+h1 {
   font-size: 150%;
   padding-top:20px;
   margin-bottom:10px;
