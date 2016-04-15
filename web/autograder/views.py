@@ -12,13 +12,16 @@ import tempfile
 import os
 import zipfile
 import io
+import itertools
+
+@app.before_request
+def before_request():
+  request.username = "rcj57"# request.headers["REQUEST_USER"]
 
 @app.route("/")
 @app.route("/<course_name>/")
 @app.route("/<course_name>/<assignment_name>/")
 def index(course_name = None, assignment_name = None):
-  if "username" not in session:
-    return redirect(url_for('login'))
   course = None
   assignment = None
 
@@ -27,17 +30,15 @@ def index(course_name = None, assignment_name = None):
     if course is not None and assignment_name is not None:
       assignment = course.assignments.filter_by(name=assignment_name).first()
 
-  courses = Course.query.all()
+  courses = filter(lambda c: c.can_access(request.username), Course.query.all()
   return render_template("index.html", courses=courses, course=course, assignment=assignment)
 
 @app.route("/<course_name>/<assignment_name>/test/", methods=["POST"])
 def test(course_name, assignment_name):
-  if "username" not in session:
-    return abort(403)
 
   course = Course.query.filter_by(name=course_name).first()
 
-  if not course.can_access(session["username"]):
+  if not course.can_access(request.username):
     return abort(403)
 
   assignment = course.assignments.filter_by(name=assignment_name).first()
@@ -55,17 +56,26 @@ def test(course_name, assignment_name):
     if messages:
       return json.dumps({"error": messages[0]})
 
+    #log the response
+    test_bool_results [False if t["failed"] else True
+                        for t in itertools.chain.from_iterable(results)]
+    log = Log(
+      request.username,
+      len(filter(None, test_bool_results)),
+      len(test_bool_results),
+      json.dumps(results)
+    )
+    db.session.add(log)
+    db.commit()
+
   return json.dumps(results)
 
 @app.route("/admin/", methods=["GET", "POST"])
 @app.route("/admin/<course_name>/", methods=["GET", "POST"])
 @app.route("/admin/<course_name>/<assignment_name>/", methods=["GET", "POST"])
 def admin(course_name=None, assignment_name=None):
-  #TODO: remove this once CUWebAuth and admin lists are set
-  if request.remote_addr not in ["68.175.150.201", "::ffff:192.168.1.7"]:
-    return redirect(url_for('login'))
-  if "username" not in session:
-    return redirect(url_for('login'))
+  if request.username != "rcj57"
+    return abort(403)
 
   course = None
   assignment = None
@@ -81,7 +91,7 @@ def admin(course_name=None, assignment_name=None):
     if course is None:
       return abort(404)
 
-    if not course.can_modify(session["username"]):
+    if not course.can_modify(request.username):
       return abort(403)
 
     if request.method == "POST" and "course_name" in request.form:
@@ -152,9 +162,6 @@ def admin(course_name=None, assignment_name=None):
 
 @app.route("/admin/<course_name>/<assignment_name>/grade/", methods=["GET", "POST"])
 def grade_submissions(course_name=None, assignment_name=None):
-  if "username" not in session:
-    return redirect(url_for('login'))
-
   if course_name is None:
     return abort(400)
 
@@ -163,7 +170,7 @@ def grade_submissions(course_name=None, assignment_name=None):
   if course is None:
     return abort(404)
 
-  if not course.can_modify(session["username"]):
+  if not course.can_modify(request.username):
     return abort(403)
 
   assignment = course.assignments.filter_by(name=assignment_name).first()
@@ -179,22 +186,3 @@ def grade_submissions(course_name=None, assignment_name=None):
     as_attachment=True,
     attachment_filename=csv_filename
   )
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        session['username'] = request.form['username']
-        return redirect(url_for('index'))
-    return '''
-      <form action="" method="post">
-        Please provide your NetID:
-        <p><input type="text" name="username">
-        <p><input type="submit" value="Login">
-      </form>
-    '''
-
-@app.route('/logout')
-def logout():
-    # remove the username from the session if it's there
-    session.pop('username', None)
-    return redirect(url_for('index'))

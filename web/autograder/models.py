@@ -4,6 +4,7 @@ import json
 import os
 import requests
 import random
+from datetime import datetime
 
 class Course(db.Model):
   id = db.Column(db.Integer, primary_key = True)
@@ -131,3 +132,17 @@ class Unittest(db.Model):
     self.testfile = testfile
     self.public = False
     self.weight = 1
+
+class Log(db.Model):
+  id = db.Column(db.Integer, primary_key = True)
+  netid = db.Column(db.String(20))
+  tests_passed = db.column(db.Integer)
+  total_tests = db.column(db.Integer)
+  results = db.column(db.String())
+  timestamp = db.column(db.DateTime(), default=datetime.now())
+
+  def __init__(self, netid, tests_passed, total_tests, results):
+    self.netid = netid
+    self.tests_passed = tests_passed
+    self.total_tests = total_tests
+    self.results = results
