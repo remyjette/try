@@ -92,14 +92,16 @@ class Testfile(db.Model):
     try:
       #TODO what if this happens on testupload or grade_all?
       r = requests.post(docker_server, files=files, verify="certs/ca.crt")
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError as e:
+      app.logger.error(e)
       error_message = "Error contacting grader host. Please contact an administrator."
       flash(error_message, "error")
       return []
 
     try:
       results = json.loads(r.text)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+      app.logger.error(e)
       error_message = "Error decoding results. Please contact an administrator."
       flash(error_message, "error")
       return []

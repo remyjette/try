@@ -14,10 +14,6 @@ import zipfile
 import io
 import itertools
 
-@app.before_request
-def before_request():
-  request.username = request.headers["Remote-User"]
-
 @app.route("/")
 @app.route("/<course_name>/")
 @app.route("/<course_name>/<assignment_name>/")

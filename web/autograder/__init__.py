@@ -35,16 +35,41 @@
 #Allow download / upload of test weights
 
 
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import os
+import textwrap
 
-app = Flask(__name__)
+class AutograderFlask(Flask):
+  def log_exception(self, exc_info):
+    if hasattr(request, 'username'):
+      user = request.username
+    else:
+      user = "<unknown>"
+    self.logger.error(textwrap.dedent("""\
+      Request:   {method} {path}
+      IP:        {ip}
+      User:      {user}
+      Agent:     {agent_platform} | {agent_browser} {agent_browser_version}
+      Raw Agent: {agent}
+      """).format(
+          method = request.method,
+          path = request.path,
+          ip = request.remote_addr,
+          agent_platform = request.user_agent.platform,
+          agent_browser = request.user_agent.browser,
+          agent_browser_version = request.user_agent.version,
+          agent = request.user_agent.string,
+          user=user
+      ), exc_info=exc_info
+    )
+
+app = AutograderFlask(__name__)
 
 import autograder.secret_key
 
 app.config['OCAML_GRADER_SERVERS'] = ['https://cs3110.remyjette.com:8000']
-
+app.config["ADMINS"] = ["rcj57@cornell.edu"]
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath("autograder.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config["TESTFILE_DIR"] = os.path.abspath("test_files")
@@ -53,11 +78,48 @@ db = SQLAlchemy(app)
 
 import autograder.views
 
-if __name__ == "__main__":
-  app.debug = True
-  use_debugger = True
+@app.before_request
+def before_request():
+  raise Exception
+  try:
+    request.username = request.headers["Remote-User"]
+  except KeyError as e:
+    if not app.debug:
+      app.logger.error(e)
+  if app.debug:
+    request.username = "rcj57"
 
-  app.run(host="::")
+if not app.debug:
+  import logging
+  file_handler = logging.FileHandler("error.log")
+  file_handler.setLevel(logging.WARNING)
+  file_handler.setFormatter(logging.Formatter(
+      '%(asctime)s %(levelname)s: %(message)s '
+      '[in %(pathname)s:%(lineno)d]'
+  ))
+  app.logger.setLevel(logging.WARNING)
+  app.logger.addHandler(file_handler)
 
+if not app.debug:
+  import logging
+  from logging.handlers import SMTPHandler
+  mail_handler.setFormatter(logging.Formatter(textwrap.dedent("""\
+    Message type:       %(levelname)s
+    Location:           %(pathname)s:%(lineno)d
+    Module:             %(module)s
+    Function:           %(funcName)s
+    Time:               %(asctime)s
+
+    Message:
+
+    %(message)s
+    """))
+
+  mail_handler = SMTPHandler('127.0.0.1',
+                             'autograder@try.cs.cornell.edu',
+                             app.config["ADMINS"],
+                             'ERROR in Autograder Application')
+  mail_handler.setLevel(logging.ERROR)
+  app.logger.addHandler(mail_handler)
 
 
