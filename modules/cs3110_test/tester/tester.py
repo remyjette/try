@@ -23,11 +23,22 @@ def tester():
         release = request.files['release']
         save_or_extract(release, tempdir)
 
+      # TODO get this from admin, don't hardcode
+      missing_files = ["eval.ml", "infer.ml"]
       i = 0
       while 'submission' + str(i) in request.files:
         submission = request.files['submission' + str(i)]
-        save_or_extract(submission, tempdir)
+        submitted_files = save_or_extract(submission, tempdir)
+        missing_files = filter(lambda f: f not in submitted_files, missing_files)
         i += 1
+      missing_files = list(missing_files)
+
+      if missing_files:
+        return json.dumps([{
+          'name': 'NO COMPILE',
+          'passed': False,
+          'message': "Missing required files:\n\n" + "\n".join(missing_files)
+        }])
 
       t = request.files['test_file']
       test_filename = secure_filename(t.filename)
@@ -38,11 +49,11 @@ def tester():
 
       compiler = subprocess.run(shlex.split("cs3110 compile -p yojson " + test_filename), stdout=subprocess.PIPE)
       if compiler.returncode != 0:
-        return json.dumps([{'name': 'NO COMPILE', 'failed': True, "message": compiler.stdout.decode("utf-8")}])
+        return json.dumps([{'name': 'NO COMPILE', 'passed': False, "message": compiler.stdout.decode("utf-8")}])
       try:
         tester = subprocess.run(shlex.split("cs3110 test " + test_filename), timeout=60, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
       except subprocess.TimeoutExpired:
-        return json.dumps([{'name': 'TIMEOUT EXPIRED', 'failed': True, "message": "The timeout has expired."}])
+        return json.dumps([{'name': 'TIMEOUT EXPIRED', 'passed': False, "message": "The timeout has expired."}])
       return tester.stdout.decode("utf-8")
 
 
@@ -63,10 +74,13 @@ def get_file_extension(filename):
 
 def save_or_extract(file, target):
   if get_file_extension(file.filename) == "zip":
-    release_archive = zipfile.ZipFile(file)
-    release_archive.extractall(target)
+    archive = zipfile.ZipFile(file)
+    archive.extractall(target)
+    return archive.namelist()
   else:
-    file.save(os.path.join(target, secure_filename(file.filename)))
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(target, filename))
+    return [filename]
 
 
 if __name__ == "__main__":

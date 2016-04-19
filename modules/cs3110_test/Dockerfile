@@ -33,13 +33,13 @@ ADD nginx.conf /etc/nginx/
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 #Copy the autograder code and set it up to run
-COPY grader grader
+COPY tester tester
 
-RUN chown -R opam:opam grader
+RUN chown -R opam:opam tester
 
 USER opam
 
-WORKDIR grader
+WORKDIR tester
 
 RUN python3.5 -m venv env
 
