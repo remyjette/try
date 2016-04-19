@@ -37,6 +37,8 @@
 
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug import secure_filename
+import datetime
 import os
 import textwrap
 
@@ -63,6 +65,14 @@ class AutograderFlask(Flask):
       ), exc_info=exc_info
     )
 
+    if (request.files):
+      # Also log the submission so we can see what happened
+      os.makedirs("error_log", exist_ok=True)
+      time = datetime.datetime.now().isoformat()
+      i = 0
+      for f in request.files.values():
+        f.save(os.path.join("error_log", time + "." + secure_filename(f.filename)))
+
 app = AutograderFlask(__name__)
 
 import autograder.secret_key
@@ -84,8 +94,9 @@ def before_request():
   except KeyError as e:
     if not app.debug:
       app.logger.error(e)
+      raise
   if app.debug:
-    request.username = "rcj57"
+    request.username = "debug"
 
 if not app.debug:
   import logging
@@ -106,7 +117,7 @@ if not app.debug:
                              'autograder@try.cs.cornell.edu',
                              app.config["ADMINS"],
                              'ERROR in Autograder Application')
-  
+
   mail_handler.setFormatter(logging.Formatter(textwrap.dedent("""\
     Message type:       %(levelname)s
     Location:           %(pathname)s:%(lineno)d
@@ -118,7 +129,7 @@ if not app.debug:
 
     %(message)s
     """)))
-  
+
   mail_handler.setLevel(logging.ERROR)
   app.logger.addHandler(mail_handler)
 
