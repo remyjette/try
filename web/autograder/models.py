@@ -2,7 +2,6 @@ from autograder import app, db
 from flask import flash
 import json
 import os
-import sys
 import requests
 import random
 from datetime import datetime
@@ -90,24 +89,10 @@ class Testfile(db.Model):
     if release_code is not None:
       files['release'] = release_code
 
-    try:
-      #TODO what if this happens on testupload or grade_all?
-      r = requests.post(docker_server, files=files, verify="certs/ca.crt")
-    except requests.exceptions.ConnectionError as e:
-      #Log the exception, then flash a message to the user
-      app.log_exception(sys.exc_info())
-      error_message = "Error contacting grader host. Please contact an administrator."
-      flash(error_message, "error")
-      return []
+    #TODO what if this happens on testupload or grade_all?
+    r = requests.post(docker_server, files=files, verify="certs/ca.crt")
 
-    try:
-      results = json.loads(r.text)
-    except json.JSONDecodeError as e:
-      #Log the exception, then flash a message to the user
-      app.log_exception(sys.exc_info())
-      error_message = "Error decoding results. Please contact an administrator."
-      flash(error_message, "error")
-      return []
+    results = json.loads(r.text)
 
     if (return_all_results):
       return results

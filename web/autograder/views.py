@@ -1,6 +1,6 @@
 from autograder import app, db
 from autograder.models import Course, Assignment, Testfile, Unittest, Log
-from flask import render_template, request, session, redirect, url_for, abort, send_file
+from flask import render_template, request, session, redirect, url_for, abort, send_file, flash
 from flask_sqlalchemy import SQLAlchemy
 from autograder.grade_assignment import grade_assignment
 from werkzeug import secure_filename
@@ -13,6 +13,8 @@ import os
 import zipfile
 import io
 import itertools
+import requests
+import sys
 
 @app.route("/")
 @app.route("/<course_name>/")
@@ -43,10 +45,21 @@ def test(course_name, assignment_name):
     submission = request.files['submission']
     submission.save(os.path.join(tempdir, secure_filename(submission.filename)))
 
-    results = {testfile.filename: testfile.grade(
-        [os.path.join(tempdir, secure_filename(submission.filename))]
-      )
-      for testfile in assignment.testfiles}
+    try:
+      results = {testfile.filename: testfile.grade(
+          [os.path.join(tempdir, secure_filename(submission.filename))]
+        )
+        for testfile in assignment.testfiles}
+    except requests.exceptions.ConnectionError as e:
+      #Log the exception, then flash a message to the user
+      app.log_exception(sys.exc_info())
+      error_message = "Error contacting grader host. Please contact an administrator."
+      flash(error_message, "error")
+    except json.JSONDecodeError as e:
+      #Log the exception, then flash a message to the user
+      app.log_exception(sys.exc_info())
+      error_message = "Error decoding results. Please contact an administrator."
+      flash(error_message, "error")
 
     messages = flask.get_flashed_messages()
     if messages:
