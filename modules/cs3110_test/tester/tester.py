@@ -19,25 +19,26 @@ paounit_json_response = open("paounit_json_response.ml", "rb").readlines()
 def tester():
   with tempfile.TemporaryDirectory() as tempdir:
     with cd(tempdir):
+
+      required_files = request.form.getlist("required_files")
+
       if 'release' in request.files:
         release = request.files['release']
         save_or_extract(release, tempdir)
 
-      # TODO get this from admin, don't hardcode
-      missing_files = ["eval.ml", "infer.ml"]
       i = 0
       while 'submission' + str(i) in request.files:
         submission = request.files['submission' + str(i)]
         submitted_files = save_or_extract(submission, tempdir)
-        missing_files = filter(lambda f: f not in submitted_files, missing_files)
+        required_files = filter(lambda f: f not in submitted_files, required_files)
         i += 1
-      missing_files = list(missing_files)
+      required_files = list(required_files)
 
-      if missing_files:
+      if required_files:
         return json.dumps([{
           'name': 'NO COMPILE',
           'passed': False,
-          'message': "Missing required files:\n\n" + "\n".join(missing_files)
+          'message': "Missing required files:\n\n" + "\n".join(required_files)
         }])
 
       t = request.files['test_file']

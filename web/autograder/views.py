@@ -141,6 +141,7 @@ def admin(course_name=None, assignment_name=None):
 
         release_code_response = testfile.grade(
           None,
+          check_required=False,
           return_all_results=True
         )
 

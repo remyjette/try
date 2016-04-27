@@ -70,7 +70,7 @@ class Testfile(db.Model):
     self.filename = filename
     self.assignment = assignment
 
-  def grade(self, submission_files, public_only=True, return_all_results=False):
+  def grade(self, submission_files, public_only=True, check_required=True, return_all_results=False):
     test_code = open(self.path, 'rb')
     release_code = open(self.assignment.release_code_file, 'rb')
 
@@ -89,8 +89,16 @@ class Testfile(db.Model):
     if release_code is not None:
       files['release'] = release_code
 
-    #TODO what if this happens on testupload or grade_all?
-    r = requests.post(docker_server, files=files, verify="certs/ca.crt")
+    #TODO set per assignment
+    data = {"required_files": ["infer.ml", "eval.ml"] if check_required else []}
+
+    #TODO what if this fails on testupload or grade_all?
+    r = requests.post(
+      docker_server,
+      data=data,
+      files=files,
+      verify="certs/ca.crt"
+    )
 
     results = json.loads(r.text)
 
