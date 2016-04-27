@@ -93,7 +93,6 @@ def before_request():
     request.username = request.headers["Remote-User"]
   except KeyError as e:
     if not app.debug:
-      app.logger.error(e)
       raise
   if app.debug:
     request.username = "debug"

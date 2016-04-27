@@ -2,6 +2,7 @@ from autograder import app, db
 from flask import flash
 import json
 import os
+import sys
 import requests
 import random
 from datetime import datetime
@@ -93,7 +94,8 @@ class Testfile(db.Model):
       #TODO what if this happens on testupload or grade_all?
       r = requests.post(docker_server, files=files, verify="certs/ca.crt")
     except requests.exceptions.ConnectionError as e:
-      app.logger.error(e)
+      #Log the exception, then flash a message to the user
+      app.log_exception(sys.exc_info())
       error_message = "Error contacting grader host. Please contact an administrator."
       flash(error_message, "error")
       return []
@@ -101,7 +103,8 @@ class Testfile(db.Model):
     try:
       results = json.loads(r.text)
     except json.JSONDecodeError as e:
-      app.logger.error(e)
+      #Log the exception, then flash a message to the user
+      app.log_exception(sys.exc_info())
       error_message = "Error decoding results. Please contact an administrator."
       flash(error_message, "error")
       return []
