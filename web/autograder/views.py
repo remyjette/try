@@ -126,8 +126,6 @@ def admin(course_name=None, assignment_name=None):
         f.save(os.path.join(testfile_dir, filename))
         testfile = Testfile(filename, assignment)
 
-        testfile = assignment.testfiles.first()
-
         release_code_response = testfile.grade(
           None,
           return_all_results=True
