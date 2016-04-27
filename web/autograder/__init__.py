@@ -69,9 +69,10 @@ class AutograderFlask(Flask):
       # Also log the submission so we can see what happened
       os.makedirs("error_log", exist_ok=True)
       time = datetime.datetime.now().isoformat()
-      i = 0
       for f in request.files.values():
-        f.save(os.path.join("error_log", time + "." + secure_filename(f.filename)))
+        filepath = os.path.join("error_log", time + "." + secure_filename(f.filename))
+        f.seek(0)
+        f.save(filepath)
 
 app = AutograderFlask(__name__)
 
