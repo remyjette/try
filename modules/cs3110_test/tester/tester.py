@@ -55,7 +55,8 @@ def tester():
         tester = subprocess.run(shlex.split("cs3110 test " + test_filename), timeout=60, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
       except subprocess.TimeoutExpired:
         return json.dumps([{'name': 'TIMEOUT EXPIRED', 'passed': False, "message": "The timeout has expired."}])
-      return tester.stdout.decode("utf-8")
+      with open("test-results.json", "r") as results:
+        return results.read()
 
 
 @contextmanager

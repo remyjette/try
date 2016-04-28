@@ -10,4 +10,4 @@ let test_result_to_json (descr, result) =
 
 let json_results = `List (List.map test_result_to_json results)
 
-let () = pretty_to_channel stdout json_results
+let () = to_file "test-results.json" json_results
