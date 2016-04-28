@@ -27,11 +27,14 @@ def tester():
         save_or_extract(release, tempdir)
 
       i = 0
-      while 'submission' + str(i) in request.files:
-        submission = request.files['submission' + str(i)]
-        submitted_files = save_or_extract(submission, tempdir)
-        required_files = filter(lambda f: f not in submitted_files, required_files)
-        i += 1
+      try:
+        while 'submission' + str(i) in request.files:
+          submission = request.files['submission' + str(i)]
+          submitted_files = save_or_extract(submission, tempdir)
+          required_files = filter(lambda f: f not in submitted_files, required_files)
+          i += 1
+      except zipfile.BadZipFile as e:
+        return json.dumps([{'name': 'NO COMPILE', 'passed': False, "message": "Uploaded .zip file is invalid."}])
       required_files = list(required_files)
 
       if required_files:
@@ -89,4 +92,4 @@ if __name__ == "__main__":
   app.debug = True
   use_debugger = True
 
-  app.run(host="::", port=8000, threaded=True)
+  app.run(host="::", port=8888, threaded=True)
