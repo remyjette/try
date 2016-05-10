@@ -1,9 +1,14 @@
 FROM ocaml/opam:ubuntu-15.10_ocaml-4.02.3
 MAINTAINER Remy Jette <remy@remyjette.com>
 
+RUN opam update
+
+RUN opam install oasis
+RUN opam pin add type_conv 112.01.02
+
 #Install custom pa_ounit
 COPY pa_ounit /pa_ounit
-RUN opam pin add pa_ounit /pa_ounit
+RUN eval `opam config env` && opam pin add pa_ounit /pa_ounit
 
 #Get async, which will get core and other important libraries
 RUN opam pin add async 112.35.00
