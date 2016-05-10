@@ -78,7 +78,7 @@ app = AutograderFlask(__name__)
 
 import autograder.secret_key
 
-app.config['OCAML_GRADER_SERVERS'] = ['https://cs3110.remyjette.com:8000']
+app.config['OCAML_GRADER_SERVERS'] = ['https://localhost:8080']
 app.config["ADMINS"] = ["rcj57@cornell.edu"]
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath("autograder.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
