@@ -1,0 +1,14 @@
+{% extends "admin_layout.html" %}
+{% block adminbody %}
+<h1>Course '{{course.name}}'</h1>
+<h2>Create a New Assignment</h2>
+{% from "_formhelpers.html" import render_field %}
+<form method="post" enctype="multipart/form-data">
+  <dl>
+    {{ render_field(form.name) }}
+    {{ render_field(form.visible) }}
+    {{ render_field(form.release_file) }}
+  </dl>
+  <p><input type=submit value="Save"></p>
+</form>
+{% endblock %}

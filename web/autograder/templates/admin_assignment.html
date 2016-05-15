@@ -1,0 +1,86 @@
+{% extends "admin_layout.html" %}
+{% block adminbody %}
+<h1>Course '{{course.name}}'</h1>
+<h1>{{'Add a new assignment' if assignment is none else 'Assignment \'' + assignment.name + '\''}}</h1>
+{% from "_formhelpers.html" import render_field %}
+<div>
+  <h2>Modify Assignment details</h2>
+  <form class="adminform {{'formgreen' if assignment is none else 'formblue'}}" method="post" enctype="multipart/form-data">
+    <fieldset>
+      <ol>
+        {{ render_field(form.name) }}
+        {{ render_field(form.visible) }}
+        {{ render_field(form.release_file,
+          "(" + assignment.release_filename + ")"
+            if assignment is not none
+            and assignment.release_filename is not none) }}
+        {{ render_field(form.max_score, "<br /><a href='javascript:void(0)' class='use_problems'>(Use Problems)</a>") }}
+        {{ render_field(form.problems) }}
+      </ol>
+      <div class="bottom_container">
+        {{ form.submit() }}
+        {% if assignment is not none %}
+          {{ form.delete() }}
+        {% endif %}
+      </div>
+    </fieldset>
+  </form>
+</div>
+{% if assignment is not none %}
+<div>
+  <h2>Grade All Submissions</h2>
+  <input type="file" id="grade_all_zip" />
+  <input type="button" id="grade_all_button" value="Grade" />
+  <div id="grade_all_response"></div>
+</div>
+<div>
+  <h2>Update Test Files</h2>
+  <script>var testfiles = {{ testfiles_json|safe }}</script>
+  <div class="adminform formred testfiles_list">
+    <fieldset>
+      <ul>
+      </ul>
+    </fieldset>
+    <div class="bottom_container">
+      <div class="new_testfile_container">
+        <strong>Add New Test File:</strong>
+        {% with form = other_forms["new_testfile_form"] %}
+          <strong>{{ form.test_file.label }}: {{ form.test_file()|safe }}</strong>
+          <strong>{{ form.tester.label }}: {{ form.tester()|safe }}</strong>
+          <strong>{{ form.required_files.label }}: {{ form.required_files()|safe }}</strong>
+        {% endwith %}
+        <input type="button" class="new_test_file_submit" value="Upload" />
+      </div>
+    </div>
+    <div class="hidden">
+    {% with form = other_forms["testfile_form"] %}
+      <li class="testfile">
+        <div>
+        <strong>Testfile Name:</strong> <span name="testfile_name">ps1_test_public.ml</span>
+        <strong>Testing Engine:</strong> <span name="tester">cs3110_test</span>
+        {{ form.required_files.label }}: {{ form.required_files()|safe }}
+        <input type="button" class="test_file_submit" value="Save" />
+        <input type="button" class="test_file_delete" value="Delete" />
+        </div>
+        <ol class="unittests">
+        {% with form = other_forms["unittest_form"] %}
+          <li class="unittest edit_all">
+            <span class="centertext edit_all_label"><strong>EDIT ALL:</strong></span>
+            <span class="hidden"><strong>{{ form.friendly_name.label }}:</strong> {{ form.friendly_name()|safe }}</span>
+            <span><strong>{{ form.is_public.label }}:</strong> {{ form.is_public()|safe }}</span>
+            <span><strong>{{ form.weight.label }}:</strong> {{ form.weight()|safe }}</span>
+            <span>
+            {% if assignment.problems %}
+              <strong>{{ form.problem.label }}:</strong> {{ form.problem()|safe }}
+            {% endif %}
+            </span>
+          </li>
+        {% endwith %}
+        </ol>
+      </li>
+    {% endwith %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

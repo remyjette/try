@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block head %}
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<link rel=stylesheet type="text/css" href="{{ url_for('static', filename='main.css') }}" />
+{% endblock %}
+{% block body %}
+<div class="container">
+  {% include "message_flashing.html" %}
+  <header>
+  <h1>
+    Autograde your code!
+  </h1>
+
+  <div style="margin-top:15px;margin-left:auto;margin-right:auto;max-width:850px">
+    <p>You can use this system to run a suite of tests on your code in the same
+    environment under which they will be graded.</p>
+    <br /><br />
+    <p>Please note: This system only stores submitted files temporarily - they are
+    removed once all tests have been run.</p>
+    <p>Test results are stored for diagnostic and research purposes - information will only be disclosed in aggregate form and will not influence any grades.</p>
+  </div>
+  </header>
+  <div id="body">
+
+  <h1>Courses:</h1>
+  {% if courses %}
+    {% for course in courses %}
+    <div style="margin-left: 25px">
+      <a href="{{ url_for('.index', course_name=course.name) }}">
+        {{ course.name }}
+      </a>
+    </div>
+    {% endfor %}
+
+    {% if course %}
+      <hr />
+      <h1 class="centertext">
+        {{course.name}}
+      </h1>
+      <h1>Assignments:</h1>
+      {% if assignments.count() %}
+        {% for assignment in assignments %}
+        <div style="margin-left: 25px">
+          <a href="{{ url_for('.index', course_name=course.name, assignment_name=assignment.name) }}">
+            {{ assignment.name }}
+          </a>
+        </div>
+        {% endfor %}
+        {% if assignment %}
+        <h1 class="centertext">
+          {{assignment.name}}
+        </h1>
+        <div id="upload_section">
+          <input type="file" name="test-file" id="submission" />
+          <input type="button" name="submit" id="submit" value="Test!" />
+        </div>
+        <div id="results"></div>
+        {% endif %}
+      {% else %}
+        <div style="margin-left: 25px">
+          No assignments available.
+        </div>
+      {% endif %}
+    {% endif %}
+  {% else %}
+  <div style="margin-left: 25px">
+    No courses available.
+  </div>
+  {% endif %}
+
+  </div>
+  <footer>
+    <a href="http://goo.gl/forms/zsmXsO7VMe" target="_blank">Your feedback is greatly appreciated - after using the autograder, we'd love to hear what you think!</a>
+  </footer>
+</div>
+{% endblock %}

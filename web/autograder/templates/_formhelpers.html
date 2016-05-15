@@ -1,0 +1,16 @@
+{# http://flask.pocoo.org/docs/0.10/patterns/wtforms/#forms-in-templates #}
+
+{% macro render_field(field, extra_content) %}
+  <li class="form_row">
+  {{ field.label }}
+  {{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  {{ extra_content|safe }}
+  </li>
+{% endmacro %}

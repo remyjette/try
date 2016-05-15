@@ -3,29 +3,18 @@
 <head>
   <script src="{{ url_for('static', filename='jquery-2.2.1.js') }}"></script>
   <script src="{{ url_for('static', filename='underscore.js') }}"></script>
-  <script src="{{ url_for('static', filename='autograder.js') }}"></script>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
   <link rel=stylesheet type="text/css" href="{{ url_for('static', filename='style.css') }}" />
   <title>Cornell CS Try Server</title>
+  {% block head %}{% endblock %}
 </head>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <body>
   <div class="topbar">
-    <img src="{{ url_for('static', filename='cornell.png') }}"
-      style="float:left;height:40px;width:40px;padding:5px" />
+    <img src="{{ url_for('static', filename='cornell.png') }}" />
     <a href="#">
       try.cs.cornell.edu
     </a>
   </div>
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul class=flashes>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
   {% block body %}{% endblock %}
 </body>
 </html>

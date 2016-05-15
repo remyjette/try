@@ -24,12 +24,21 @@ $(function() {
             resultsDiv.append(summaryDiv);
           return;
         }
-        _.each(response, function (results, testfile_name) {
-          var totalPassed = results.reduce(function(acc, result) {return acc + (result.passed ? 1 : 0);}, 0);
+        _.each(response, function (test_response, testfile_name) {
           var summaryDiv = $("<div>")
-            .addClass("test_summary")
-            .html("Tests Passed: " + totalPassed + "/" + results.length);
+            .addClass("test_summary");
           resultsDiv.append(summaryDiv);
+          if (test_response.error) {
+            summaryDiv.html("Test File " + testfile_name + ": " + test_response.error);
+            var resultDiv = $("<div>");
+            resultDiv.addClass("test_result").addClass("failed")
+              .append("<p>Error Message: <pre>" + test_response.message + "</pre></p>");
+            resultsDiv.append(resultDiv);
+            return;
+          }
+          results = test_response.results;
+          var totalPassed = results.reduce(function(acc, result) {return acc + (result.passed ? 1 : 0);}, 0);
+          summaryDiv.html("Tests Passed: " + totalPassed + "/" + results.length);
 
           results.forEach(function (result) {
             var resultDiv = $("<div>");

@@ -1,0 +1,11 @@
+{% extends "admin_layout.html" %}
+{% block adminbody %}
+<h1>Welcome to the try.cs.cornell.edu Admin Page</h1>
+<p>Please select a course to administer on the left.</p>
+{% if request.global_admin %}
+  <p>Or, <a href="{{url_for(".new_course")}}">create a new course</a>.</p>
+{% else %}
+  <p>If you want to add a new course to this system, please contact an
+  administrator.</p>
+{% endif %}
+{% endblock %}

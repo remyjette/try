@@ -1,41 +1,24 @@
 #!/usr/bin/env python3
 
+# TODO:
 
+# Multiple input boxes for student upload (backend is already there!)
+# Make another module or two (PyUnit, JUnit?)
+# Allow download / upload of test weights
+# Error checking: does the module actually timeout?
+# catch sql add errors and show nice messages (unique constraints?)
+# handle testfile no tests on upload or gradeall
+# handle grader error on upload/gradealll
+# timeouts on testfiles - make configurable
+# Ensure app.config doesn't break if config params missing from config.cfg
+# tester: use permissions
+# tester: timeouts
+# Documentation
 
-#TODOS:
-#Finish CSV so the output is _fully_ CMS-compatible
-# : Actually use the weights
+# WOULD BE NICE:
+# Add some sort of progress indicator to the 'Grade All' functionality
 
-#auditing - make logs
-
-#Flesh out admin - allow other instructors to edit course, allow other admins
-
-#Allow deletion of testfiles / assignments / courses
-
-#Allow replacing release files
-
-#Multiple input boxes for student upload (backend is already there!)
-
-#STYLING
-
-#Give reports (average scores and stuff) after grading all submissions
-
-#Ajax-ify 'the all submissions', maybe make it have a progress bar?
-
-
-
-#Make another module or two (PyUnit, JUnit?)
-
-#DEPLOY !!!
-
-#Config file instead of configuration in __init__.py
-
-#Make some things configurable by course (such as container timeouts)
-
-#Allow download / upload of test weights
-
-
-from flask import Flask, request
+from flask import Flask, request, flash, get_flashed_messages, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import secure_filename
 import datetime
@@ -65,42 +48,56 @@ class AutograderFlask(Flask):
       ), exc_info=exc_info
     )
 
-    if (request.files):
+    if request.files and self.config['ERROR_FILES_DIR']:
       # Also log the submission so we can see what happened
-      os.makedirs("error_log", exist_ok=True)
+      os.makedirs(self.config['ERROR_FILES_DIR'], exist_ok=True)
       time = datetime.datetime.now().isoformat()
       for f in request.files.values():
-        filepath = os.path.join("error_log", time + "." + secure_filename(f.filename))
+        filepath = os.path.join(
+            self.config['ERROR_FILES_DIR'],
+            time + "." + secure_filename(f.filename)
+        )
         f.seek(0)
         f.save(filepath)
 
 app = AutograderFlask(__name__)
-
-import autograder.secret_key
-
-app.config['OCAML_GRADER_SERVERS'] = ['https://localhost:8080']
-app.config["ADMINS"] = ["rcj57@cornell.edu"]
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath("autograder.db")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config["TESTFILE_DIR"] = os.path.abspath("test_files")
-app.config["RELEASECODE_DIR"] = os.path.abspath("release_code")
+app.config.from_pyfile('../config.cfg')
+app.config["TESTFILE_DIR"] = os.path.abspath(app.config["TESTFILE_DIR"])
+app.config["RELEASECODE_DIR"] = os.path.abspath(app.config["RELEASECODE_DIR"])
+app.config["GRADES_DIR"] = os.path.abspath(app.config["GRADES_DIR"])
+app.config["ERROR_LOG"] = os.path.abspath(app.config["ERROR_LOG"])
+app.config["ERROR_FILES_DIR"] = os.path.abspath(app.config["ERROR_FILES_DIR"])
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
-import autograder.views
+from autograder.main_views import main
+from autograder.admin_views import admin
+app.register_blueprint(main)
+app.register_blueprint(admin, url_prefix='/admin')
 
 @app.before_request
 def before_request():
   try:
     request.username = request.headers["Remote-User"]
+    request.global_admin = request.username in app.config["ADMINS"]
   except KeyError as e:
     if not app.debug:
       raise
   if app.debug:
     request.username = "debug"
+    request.global_admin = True
+    # flash a warning message if we're in admin in debug mode
+    # try to avoid flashing the warning if it's already been flashed
+    # this can happen (for example) on redirects or ajax requests as the
+    # flash message isn't consumed
+    flashes = session.get('_flashes', [])
+    if ('warning', 'DEBUG mode is enabled!') not in flashes:
+      flash("DEBUG mode is enabled!", "warning")
 
-if not app.debug:
+
+if not app.debug and app.config["ERROR_LOG"]:
   import logging
-  file_handler = logging.FileHandler("error.log")
+  file_handler = logging.FileHandler(app.config["ERROR_LOG"])
   file_handler.setLevel(logging.WARNING)
   file_handler.setFormatter(logging.Formatter(
       '%(asctime)s %(levelname)s: %(message)s '
@@ -109,7 +106,7 @@ if not app.debug:
   app.logger.setLevel(logging.WARNING)
   app.logger.addHandler(file_handler)
 
-if not app.debug:
+if not app.debug and app.config['ADMINS']:
   import logging
   from logging.handlers import SMTPHandler
 

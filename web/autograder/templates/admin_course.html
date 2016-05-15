@@ -1,0 +1,24 @@
+{% extends "admin_layout.html" %}
+{% block adminbody %}
+<h1>{{'Add a new course' if course is none else 'Course \'' + course.name + '\''}}</h1>
+<h2>Modify course details</h2>
+{% from "_formhelpers.html" import render_field %}
+<form class="adminform {{'formgreen' if course is none else 'formblue'}}" method="post">
+  <fieldset>
+    <ol>
+    {{ render_field(form.name) }}
+    {{ render_field(form.visible) }}
+    {{ render_field(form.instructors) }}
+    {{ render_field(form.students) }}
+    {{ render_field(form.default_timeout) }}
+    {{ render_field(form.default_tester) }}
+    </ol>
+  <div class="bottom_container">
+    {{ form.submit() }}
+    {% if course is not none %}
+      {{ form.delete() }}
+    {% endif %}
+  </div>
+  </fieldset>
+</form>
+{% endblock %}
