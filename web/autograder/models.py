@@ -17,7 +17,7 @@ class Course(db.Model):
   instructors = db.Column(db.PickleType, nullable = False)
   students = db.Column(db.PickleType, nullable = False)
   default_timeout = db.Column(db.Integer, nullable = False)
-  default_tester = db.Column(db.String(200), nullable = False)
+  default_tester = db.Column(db.String(200))
   assignments=db.relationship("Assignment", backref="course", lazy="dynamic", cascade="all, delete-orphan")
 
   def __init__(self, name=None, description=None):
@@ -25,8 +25,6 @@ class Course(db.Model):
     self.description = description
     self.students = []
     self.instructors = []
-    self.default_timeout = 10
-    self.default_tester = app.config["GRADER_SERVERS"].keys()[0]
 
   def can_access(self, username):
     return self.can_modify(username) or username in self.students
@@ -97,6 +95,7 @@ class Testfile(db.Model):
   filename = db.Column(db.String(255), nullable=False)
   tester = db.Column(db.String(200), nullable=False)
   required_files = db.Column(db.PickleType)
+  timeout = db.Column(db.Integer, nullable=False)
   assignment_id = db.Column(db.Integer, db.ForeignKey("assignment.id"), nullable=False)
   unittests=db.relationship("Unittest", backref="testfile", lazy="dynamic", cascade="all, delete-orphan")
   __table_args__ = (db.UniqueConstraint('filename', 'assignment_id'),)
@@ -105,10 +104,11 @@ class Testfile(db.Model):
   def path(self):
       return os.path.join(self.assignment.testfile_dir, self.filename)
 
-  def __init__(self, filename, assignment, tester=None, required_files=None):
+  def __init__(self, filename, assignment, tester=None, timeout=None, required_files=None):
     self.filename = filename
     self.assignment = assignment
     self.tester = tester
+    self.timeout = timeout
     self.required_files = required_files if required_files else []
 
   def to_dict(self):
@@ -140,7 +140,10 @@ class Testfile(db.Model):
     if release_code is not None:
       files['release'] = release_code
 
-    data = {"required_files": self.required_files if check_required else []}
+    data = {
+      "required_files": self.required_files if check_required else [],
+      "timeout": self.timeout
+    }
 
     #TODO what if this fails on testupload or grade_all?
     r = requests.post(

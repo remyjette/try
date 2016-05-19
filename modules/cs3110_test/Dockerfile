@@ -31,8 +31,8 @@ RUN apt-get update \
   && apt-get install -y python3.5 python3.5-venv nginx
 
 #Configure nginx to accept web requests
-ADD certs/server.key /etc/ssl/
-ADD certs/server.crt /etc/ssl/
+#ADD certs/server.key /etc/ssl/
+#ADD certs/server.crt /etc/ssl/
 RUN rm -v /etc/nginx/nginx.conf
 ADD nginx.conf /etc/nginx/
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf

@@ -48,6 +48,7 @@
           <strong>{{ form.test_file.label }}: {{ form.test_file()|safe }}</strong>
           <strong>{{ form.tester.label }}: {{ form.tester()|safe }}</strong>
           <strong>{{ form.required_files.label }}: {{ form.required_files()|safe }}</strong>
+          <strong>{{ form.timeout.label }}: {{ form.timeout()|safe }}</strong>
         {% endwith %}
         <input type="button" class="new_test_file_submit" value="Upload" />
       </div>
@@ -59,6 +60,7 @@
         <strong>Testfile Name:</strong> <span name="testfile_name">ps1_test_public.ml</span>
         <strong>Testing Engine:</strong> <span name="tester">cs3110_test</span>
         {{ form.required_files.label }}: {{ form.required_files()|safe }}
+        {{ form.timeout.label }}: {{ form.timeout()|safe }}
         <input type="button" class="test_file_submit" value="Save" />
         <input type="button" class="test_file_delete" value="Delete" />
         </div>

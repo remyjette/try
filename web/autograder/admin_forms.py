@@ -46,6 +46,7 @@ class AssignmentForm(Form):
 class NewTestFileForm(Form):
   test_file = FileField('File')
   tester = SelectField('Testing Engine', choices=tester_choices)
+  timeout = IntegerField('Timeout')
   required_files = TextAreaField('Required Files')
 
 # TestFileForm and UnitTestForm will be cloned and repeated on the page.
@@ -57,6 +58,7 @@ def clear_id(field):
 
 class TestFileForm(Form):
   required_files = TextAreaField('Required Files')
+  timeout = IntegerField('Timeout')
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

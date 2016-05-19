@@ -10,6 +10,7 @@ import shlex
 import subprocess
 import tempfile
 import json
+import psutil
 
 app = Flask(__name__)
 
@@ -19,6 +20,9 @@ paounit_json_response = open("paounit_json_response.ml", "rb").readlines()
 def tester():
   with tempfile.TemporaryDirectory() as tempdir:
     with cd(tempdir):
+      # The timeout *should* be provided, but we give a resonable default just
+      # in case it isn't.
+      timeout = request.form.get("timeout", default=60, type=int)
 
       required_files = request.form.getlist("required_files")
 
@@ -50,14 +54,22 @@ def tester():
       test_file.writelines(paounit_json_response)
       test_file.close()
 
-      # TODO use permissions, make sure student can't read tests
       compiler = subprocess.run(shlex.split("cs3110 compile -p yojson,str " + test_filename), stdout=subprocess.PIPE)
       if compiler.returncode != 0:
         return json.dumps({'error': 'NO COMPILE', "message": compiler.stdout.decode("utf-8")})
+      # Now that the code is compiled, remove the test file source as it's not
+      # needed to prevent student code from easily reading it.
+      os.remove(os.path.join(tempdir, test_filename))
+      os.remove(os.path.join(tempdir, "_build", test_filename))
       try:
-        tester = subprocess.run(shlex.split("cs3110 test " + test_filename), timeout=60, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        tester = subprocess.Popen(shlex.split("cs3110 test " + test_filename), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        tester.wait(timeout=timeout)
       except subprocess.TimeoutExpired:
-        # TODO need to confirm actually timed out. Also make sure 'timeout expired' message works
+        parent = psutil.Process(tester.pid)
+        children = parent.children(recursive=True)
+        for child in children:
+          child.kill()
+        parent.kill()
         return json.dumps({'error': 'TIMEOUT EXPIRED', "message": "The timeout has expired."})
       with open("test-results.json", "r") as results:
         return json.dumps({'results': json.load(results)})

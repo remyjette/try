@@ -3,16 +3,15 @@
 # TODO:
 
 # Multiple input boxes for student upload (backend is already there!)
+# Restrict student upload filetypes
 # Make another module or two (PyUnit, JUnit?)
 # Allow download / upload of test weights
-# Error checking: does the module actually timeout?
 # catch sql add errors and show nice messages (unique constraints?)
 # handle testfile no tests on upload or gradeall
 # handle grader error on upload/gradealll
-# timeouts on testfiles - make configurable
-# Ensure app.config doesn't break if config params missing from config.cfg
-# tester: use permissions
-# tester: timeouts
+# Grade all results - show test pass rates
+# Grade all results - show NetID of no-compile / timeout
+# Grade all results - tie CSV to session maybe? delete CSV at some point
 # Documentation
 
 # WOULD BE NICE:
@@ -61,13 +60,33 @@ class AutograderFlask(Flask):
         f.save(filepath)
 
 app = AutograderFlask(__name__)
+app.config.from_object({
+    "SSL_VERIFY": True,
+    "ADMINS": [],
+    "ERROR_LOG_EMAILS": [],
+    "ERROR_LOG": None,
+    "ERROR_FILES_DIR": None
+})
 app.config.from_pyfile('../config.cfg')
+required_config_params = [
+    "SECRET_KEY",
+    "GRADER_SERVERS",
+    "SQLALCHEMY_DATABASE_URI",
+    "RELEASECODE_DIR",
+    "TESTFILE_DIR",
+    "GRADES_DIR"
+]
+missing_configs = set(required_config_params).difference(app.config.keys())
+if missing_configs:
+  raise Exception("The following config settings are missing: " + ", ".join(missing_configs))
+
 app.config["TESTFILE_DIR"] = os.path.abspath(app.config["TESTFILE_DIR"])
 app.config["RELEASECODE_DIR"] = os.path.abspath(app.config["RELEASECODE_DIR"])
 app.config["GRADES_DIR"] = os.path.abspath(app.config["GRADES_DIR"])
 app.config["ERROR_LOG"] = os.path.abspath(app.config["ERROR_LOG"])
 app.config["ERROR_FILES_DIR"] = os.path.abspath(app.config["ERROR_FILES_DIR"])
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
 
 from autograder.main_views import main

@@ -67,9 +67,10 @@ $(function() {
 
   $(".new_test_file_submit").on("click", function () {
     var container = $(this).parent();
-    var file = $("input[name=test_file]");
-    var tester = $("select[name=tester]");
-    var required_files = $("textarea[name=required_files]");
+    var file = container.find("input[name=test_file]");
+    var tester = container.find("select[name=tester]");
+    var timeout = container.find("input[name=timeout]")
+    var required_files = container.find("textarea[name=required_files]");
 
     if (file.val() == "") {
       alert("No test file was selected.");
@@ -79,6 +80,7 @@ $(function() {
     var formData = new FormData();
     formData.append('tester', tester.val());
     formData.append('required_files', required_files.val());
+    formData.append('timeout', timeout.val());
     formData.append('test_file', file.get(0).files[0]);
 
     $.ajax({
@@ -109,6 +111,7 @@ $(function() {
     var testFile = $(this).closest(".testfile");
     var data = testFile.data("json");
     data.required_files = testFile.find("textarea[name='required_files']").val().split("\n");
+    data.timeout = testFile.find("input[name=timeout]").val();
     testFile.find(".unittests .unittest:not(.edit_all)").each(function (i, e) {
       var testData = _(data.unittests).find(function(u) {
         return u.id == $(e).data("json").id;
@@ -159,6 +162,7 @@ $(function() {
     newTestFile.data("json", testfile);
     newTestFile.find("span[name='testfile_name']").text(testfile.filename);
     newTestFile.find("span[name='tester']").text(testfile.tester);
+    newTestFile.find("input[name='timeout']").val(testfile.timeout);
     newTestFile.find("textarea[name='required_files']").val(testfile.required_files.join("\n"));
     var unitTestList = newTestFile.find(".unittests");
     var editAllRow = unitTestList.find("li.unittest.edit_all");

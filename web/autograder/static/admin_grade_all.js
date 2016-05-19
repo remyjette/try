@@ -142,7 +142,7 @@ function plotHistogram(element, data, binCount, max) {
   .append("text")
     .attr("x", width / 2 - margin / 2)
     .attr("y", 30)
-    .text("Values");
+    .text("Grade");
 
   chart.append("g")
   .attr("class", "axis")

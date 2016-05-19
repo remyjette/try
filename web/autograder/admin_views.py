@@ -161,6 +161,7 @@ def assignment(course_name, assignment_name=None):
   }
   if assignment:
     other_forms["new_testfile_form"].tester.default = course.default_tester
+    other_forms["new_testfile_form"].timeout.default = course.default_timeout
     other_forms["new_testfile_form"].process()
     other_forms["unittest_form"].problem.choices = [('', '')] + [(x.problem_name, x.problem_name) for x in assignment.problems]
 
@@ -194,7 +195,7 @@ def testfile(course_name, assignment_name, testfile_id=None):
     f.save(os.path.join(testfile_dir, filename))
     required_files = [r.strip() for r in request.form["required_files"].split("\n") if r.strip()]
 
-    testfile = Testfile(filename, assignment, request.form["tester"], required_files)
+    testfile = Testfile(filename, assignment, request.form["tester"], request.form["timeout"], required_files)
 
     # TODO handle failure of testfile.grade (exceptions)
     # TODO handle no unit tests
@@ -202,8 +203,10 @@ def testfile(course_name, assignment_name, testfile_id=None):
     release_code_response = testfile.grade(
       None,
       check_required=False,
-      return_all_results=True
+      public_only=False
     )
+
+    print(release_code_response)
 
     test_names = [result["name"] for result in release_code_response["results"]]
     for test_name in test_names:
@@ -222,6 +225,7 @@ def testfile(course_name, assignment_name, testfile_id=None):
 
     data = request.get_json()
     testfile.required_files = [r.strip() for r in data["required_files"] if r.strip()]
+    testfile.timeout = data["timeout"]
     for test in testfile.unittests.all():
       test_data = [x for x in data["unittests"] if x["id"] == test.id][0]
       test.friendly_name = test_data["friendly_name"]
@@ -287,7 +291,5 @@ def get_grades_csv(course_name, assignment_name, csv_id):
       as_attachment=True,
       attachment_filename=csv_filename
     )
-  except SyntaxError:
-    pass
-  #except FileNotFoundError:
-  #  return abort(404)
+  except FileNotFoundError:
+    return abort(404)
