@@ -10,9 +10,6 @@ def main():
   shutil.rmtree("test_files", ignore_errors=True)
   os.unlink("autograder.db")
   db.create_all()
-  c = Course("cs3110", "")
-  db.session.add(c)
-  db.session.commit()
 
 if __name__ == "__main__":
   main()

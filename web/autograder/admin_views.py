@@ -206,8 +206,6 @@ def testfile(course_name, assignment_name, testfile_id=None):
       public_only=False
     )
 
-    print(release_code_response)
-
     test_names = [result["name"] for result in release_code_response["results"]]
     for test_name in test_names:
       unittest = Unittest(test_name, testfile)

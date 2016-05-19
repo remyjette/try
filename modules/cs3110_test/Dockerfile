@@ -28,7 +28,7 @@ USER root
 
 #Install python3.5 for the server, as well as nginx
 RUN apt-get update \
-  && apt-get install -y python3.5 python3.5-venv nginx
+  && apt-get install -y python3.5 python3.5-dev python3.5-venv nginx
 
 #Configure nginx to accept web requests
 #ADD certs/server.key /etc/ssl/
@@ -51,6 +51,6 @@ RUN python3.5 -m venv env
 ADD requirements.txt requirements.txt
 RUN . env/bin/activate; pip install -r requirements.txt
 
-EXPOSE 443
+EXPOSE 80
 
 CMD . env/bin/activate; eval `opam config env`; ( gunicorn -w 8 -k gthread -b unix:/tmp/gunicorn.sock tester:app & sudo service nginx start)

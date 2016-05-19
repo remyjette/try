@@ -1,5 +1,6 @@
 TODO:
 
+Make sure startup creates DB if it doesn't exist rather than failing
 Multiple input boxes for student upload - they can submit multiple via .zip, but
   it would be nice to let them just select 2-3 files instead
 Restrict student upload filetypes / number of files
