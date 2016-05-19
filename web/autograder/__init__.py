@@ -1,22 +1,5 @@
 #!/usr/bin/env python3
 
-# TODO:
-
-# Multiple input boxes for student upload (backend is already there!)
-# Restrict student upload filetypes
-# Make another module or two (PyUnit, JUnit?)
-# Allow download / upload of test weights
-# catch sql add errors and show nice messages (unique constraints?)
-# handle testfile no tests on upload or gradeall
-# handle grader error on upload/gradealll
-# Grade all results - show test pass rates
-# Grade all results - show NetID of no-compile / timeout
-# Grade all results - tie CSV to session maybe? delete CSV at some point
-# Documentation
-
-# WOULD BE NICE:
-# Add some sort of progress indicator to the 'Grade All' functionality
-
 from flask import Flask, request, flash, get_flashed_messages, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import secure_filename

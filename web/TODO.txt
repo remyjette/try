@@ -1,0 +1,19 @@
+TODO:
+
+Multiple input boxes for student upload - they can submit multiple via .zip, but
+  it would be nice to let them just select 2-3 files instead
+Restrict student upload filetypes / number of files
+Allow download / upload of test weights
+Admin interface validation:
+  catch sql add errors and show nice messages (unique constraints?)
+    mostly done
+  handle testfile no tests on upload or gradeall
+  handle grader error on upload/gradealll
+
+Grade all results - show test pass rates
+Grade all results - show NetID of no-compile / timeout
+Grade all results - tie CSV to session maybe? delete CSV at some point
+
+Add Documentation
+
+Add some sort of progress indicator to the 'Grade All' functionality
