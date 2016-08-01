@@ -12,7 +12,6 @@ Admin interface validation:
   cs3110_test module - cleanly handle Pa_ounit_lib.summarize () call
 
 Grade all results - show test pass rates
-Grade all results - show NetID of no-compile / timeout
 Grade all results - tie CSV to session maybe? delete CSV at some point
 
 Add some sort of progress indicator to the 'Grade All' functionality

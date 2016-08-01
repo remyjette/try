@@ -46,25 +46,39 @@ $(function () {
           .append("<h2><a href='grade/" + data.csv_id + "'>Download Results</a></h2>");
         var totalScores = data.results.map(function (result) {
           return _.chain(result)
-            .omit("_error_types")
+            .omit(["_error_types", "NetID"])
             .values()
             .reduce(function (x, y) { return x+y})
             .value();
         });
 
-        var errorCounts = _.chain(data.results)
-          .pluck("_error_types")
-          .flatten()
-          .groupBy(function (x) {return x})
-          .mapObject(function (x) {return x.length})
+        var [resultsMultipleErrors, resultsForErrorGrouping] = _(data.results)
+          .partition(function (x) {return x._error_types.length >= 2});
+        resultsMultipleErrors.forEach(function (x) {
+          x._error_types.forEach(function (errorType) {
+            var o = _.clone(x);
+            o._error_types = errorType;
+            resultsForErrorGrouping.push(o);
+          });
+        });
+        var errorLists = _.chain(resultsForErrorGrouping)
+          .filter(function (x) {return x._error_types.length > 0})
+          .groupBy(function (x) {return x._error_types})
+          .mapObject(function (x) {return _.pluck(x, "NetID")})
           .value();
-
-        responseDiv.append("<h2>Error Counts:<h2>");
-        for (var errorType in errorCounts) {
-          if (errorCounts.hasOwnProperty(errorType)) {
-            responseDiv.append("<h3>" + errorType + ": " + errorCounts[errorType] + "</h3><br /><br />");
-          }
+        if (!_.isEmpty(errorLists)) {
+          responseDiv.append("<h2>Error Counts:<h2>");
+          _(errorLists).mapObject(function(userList, errorType) {
+            $("<h3>" + errorType + ": " + userList.length + "</h3>")
+              .css("margin-top", "1em")
+              .appendTo(responseDiv);
+            userList = $("<div>" + userList.join("<br />") + "</div>");
+            $("<a href='javascript:void(0)'>(List Students)</a>")
+              .on('click', function() {$(this).replaceWith(userList)})
+              .appendTo(responseDiv);
+          });
         }
+
         responseDiv.append("<h1>Summary</h1>")
           .append(generateSummary(totalScores, data.max_score));
 
