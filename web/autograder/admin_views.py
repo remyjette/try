@@ -1,3 +1,8 @@
+"""This is the controller for the admin portion of the site.
+
+The admin pages allow CRUD operations on courses and assignments.
+"""
+
 from autograder import app, db
 from autograder.models import Course, Assignment, Testfile, Unittest
 from autograder.admin_forms import CourseForm, AssignmentForm, NewTestFileForm, TestFileForm, UnitTestForm
@@ -15,27 +20,52 @@ admin = Blueprint('admin', __name__)
 
 @admin.before_request
 def before_request():
+  """Before any request, make sure that the user can access admin pages.
+
+  This also sets g.courses to be the courses the user can access. If the user
+  is a global admin, this will be all courses. Otherwise, this will just be the
+  courses they can access."""
   if request.global_admin:
     g.courses = Course.query.all()
   else:
-    g.courses = Course.accessible_by(request.username)
+    g.courses = Course.modifiable_by(request.username)
     if not g.courses:
       return abort(403)
 
 
 @admin.context_processor
 def context_processor():
+  """Set template variables for every render."""
   return dict(courses=g.courses)
 
 
 @admin.route("/")
 def index():
+  """Just a basic landing page from which the user can select an action."""
   return render_template("admin_landing.html")
+
+
+def find_course(course_name):
+  """Given a course name, find that course in the user's courses.
+
+  Raises NoResultfond if the course cannot be found (either the course doesn't
+  exist or the user doesn't have permission to modify it)"""
+  try:
+    return next(c for c in g.courses if c.name == course_name)
+  except:
+    raise NoResultFound
 
 
 @admin.route("/new/", methods=["GET", "POST"], endpoint="new_course")
 @admin.route("/<course_name>/", methods=["GET", "POST"])
 def course(course_name=None):
+  """Allow modification/creation of new courses.
+
+  A GET request will display a form for creating/modifying a course.
+  A POST request to this endpoint will actually commit changes to the DB.
+
+  Only global admins can create new courses. Anyone in the instructors list for
+  a course can modify it."""
   if course_name is None:
     if not request.global_admin:
       # Only allow global admins to create new courses
@@ -43,20 +73,22 @@ def course(course_name=None):
     course = None
     form = CourseForm()
   else:
-    course = Course.query.filter_by(name=course_name).first()
-    if course is None:
+    try:
+      course = find_course(course_name)
+    except:
       return abort(404)
-    if not course.can_modify(request.username):
-      return abort(403)
     form = CourseForm(obj=course)
 
   if form.is_submitted():
     if form.delete.data:
+      # If the delete action was selected, delete the course then redirect to
+      # the landing page.
       course.delete()
       return redirect(url_for('.index'))
 
     error = False
     if course is None or course.name != form.name.data:
+      # The course name is new/changed. Error handling for course name.
       if form.name.data is None or form.name.data in ["", "new", "admin"]:
         flash("Invalid New Course Name", "error")
         error = True
@@ -65,6 +97,7 @@ def course(course_name=None):
         error = True
 
     if not error:
+      # Set the rest of the data and then commit it to the DB
       def get_stripped_username_list(l):
         return [username.strip() for username in l.replace("@cornell.edu", "").replace("\n", ",").split(",") if username.strip()]
       form.instructors.data = get_stripped_username_list(form.instructors.data)
@@ -89,8 +122,12 @@ def course(course_name=None):
 @admin.route("/<course_name>/new/", methods=["GET", "POST"], endpoint="new_assignment")
 @admin.route("/<course_name>/<assignment_name>/", methods=["GET", "POST"])
 def assignment(course_name, assignment_name=None):
+  """Modify/create new assignments
+
+  A GET request will display a form for creating/modifying an assignment.
+  A POST request to this endpoint will actually commit changes to the DB."""
   try:
-    course = Course.query.filter_by(name=course_name).one()
+    course = find_course(course_name)
     if assignment_name is None:
       assignment = None
       form = AssignmentForm()
@@ -99,10 +136,8 @@ def assignment(course_name, assignment_name=None):
       form = AssignmentForm(obj=assignment)
   except NoResultFound:
     return abort(404)
-  if not course.can_modify(request.username):
-    return abort(403)
 
-  #add a blank entry to use as default
+  #add a blank problem entry to use as default
   form.problems.append_entry()
 
   if form.is_submitted():
@@ -111,6 +146,7 @@ def assignment(course_name, assignment_name=None):
       return redirect(url_for('.course', course_name=course.name))
 
     error = False
+    #If an assignment is new or the name is modified, validate the name
     if assignment is None or assignment.name != form.name.data:
       if form.name.data is None or form.name.data in ["", "new"]:
         flash("Invalid New Assignment Name", "error")
@@ -147,13 +183,20 @@ def assignment(course_name, assignment_name=None):
       if not error:
         return redirect(url_for(".assignment", course_name=course.name, assignment_name=assignment.name))
 
-  if assignment and assignment.testfiles.filter(Testfile.unittests.any(Unittest.is_public)).count() == 0 and assignment.visible:
+  # Whenever viewing an assignment, check to see if the assignment is visible to
+  # students. If it is but there are not public test cases, it'll actually be
+  # hidden despite the visibility setting to avoid students uploading the
+  # submission and seeing no results. Throw a warning so the instructor is
+  # aware of the conflicting settings.
+  if assignment and assignment.visible and assignment.testfiles.filter(Testfile.unittests.any(Unittest.is_public)).count() == 0:
     flash("Assignment '" + assignment.name + "' is marked 'visible' but there"
-          " are no public test files. To avoid confusion this assignment will"
+          " are no public test cases. To avoid confusion this assignment will"
           " be hidden from students despite the visibility setting.", "warning")
 
   testfiles_json = json.dumps([t.to_dict() for t in assignment.testfiles.all()]) if assignment else None
 
+  # Add the other necessary forms here, and set up their defaults before
+  # rendering the template
   other_forms = {
     "new_testfile_form": NewTestFileForm(),
     "testfile_form": TestFileForm(),
@@ -178,13 +221,15 @@ def assignment(course_name, assignment_name=None):
 @admin.route("/<course_name>/<assignment_name>/testfile/", methods=["PUT"])
 @admin.route("/<course_name>/<assignment_name>/testfile/<int:testfile_id>/", methods=["POST", "DELETE"])
 def testfile(course_name, assignment_name, testfile_id=None):
+  """Upload, modify, and delete test files.
+
+  A PUT request is required to upload a new test file. Test files can be
+  modified via POST or deleted via DELETE."""
   try:
-    course = Course.query.filter_by(name=course_name).one()
+    course = find_course(course_name)
     assignment = course.assignments.filter_by(name=assignment_name).one()
   except NoResultFound:
     return abort(404)
-  if not course.can_modify(request.username):
-    return abort(403)
 
   # TODO error handling, overwrite
   if request.method == "PUT":
@@ -247,13 +292,22 @@ def testfile(course_name, assignment_name, testfile_id=None):
 
 @admin.route("/<course_name>/<assignment_name>/grade/", methods=["POST"])
 def grade_submissions(course_name, assignment_name):
+  """Grade all submissions for a particular assignment.
+
+  A .zip archive should be uploaded as part of the POST request to this endpoint.
+  The archive should contain a single directory 'Submissions', which should
+  contain a directory for each student's submission.
+
+  See the grade_assignment module for the implementation of the actul testing
+  logic - this function is merely the endpoint to receive the request and
+  return the response. The respose returned has an identifier to allow the
+  client to request a CSV of grade results, as well as some JSON of
+  results to be displayed to the user on the page."""
   try:
-    course = Course.query.filter_by(name=course_name).one()
+    course = find_course(course_name)
     assignment = course.assignments.filter_by(name=assignment_name).one()
   except NoResultFound:
     return abort(404)
-  if not course.can_modify(request.username):
-    return abort(403)
 
   submissions_archive = request.files['submissions']
 
@@ -273,13 +327,12 @@ def grade_submissions(course_name, assignment_name):
 
 @admin.route("/<course_name>/<assignment_name>/grade/<csv_id>/")
 def get_grades_csv(course_name, assignment_name, csv_id):
+  """Sends the grades CSV with the given identifier in this assignment."""
   try:
-    course = Course.query.filter_by(name=course_name).one()
+    course = find_course(course_name)
     assignment = course.assignments.filter_by(name=assignment_name).one()
   except NoResultFound:
     return abort(404)
-  if not course.can_modify(request.username):
-    return abort(403)
 
   csv_filename = course.name + "_" + assignment.name + "_grades.csv"
   try:

@@ -17,23 +17,37 @@ main = Blueprint('main', __name__)
 @main.route("/<course_name>/")
 @main.route("/<course_name>/<assignment_name>/")
 def index(course_name = None, assignment_name = None):
+  """
+  The main homepage of the autograder site. Students can see their courses,
+  select a course to view assignments, and then select an assignment to render
+  the upload form for use in uploading their code.
+  """
+  courses = Course.accessible_by(request.username)
   course = None
   assignments = None
   assignment = None
 
   if course_name is not None:
-    course = Course.query.filter_by(name=course_name).first_or_404()
+    course = next((c for c in courses if c.name == course_name), None)
+    if course is None:
+      return abort(404)
     # Only show public unit tests
     assignments = course.assignments.filter_by(visible=True).filter(Assignment.testfiles.any(Testfile.unittests.any(Unittest.is_public)))
     if course is not None and assignment_name is not None:
       assignment = assignments.filter_by(name=assignment_name).first_or_404()
 
-  courses = [c for c in Course.query.all() if c.can_access(request.username)]
   return render_template("main.html", courses=courses, course=course, assignments=assignments, assignment=assignment)
 
 
 @main.route("/<course_name>/<assignment_name>/test/", methods=["POST"])
 def test(course_name, assignment_name):
+  """This function takes a student submission, runs the testfiles for this
+  assignment, and returns a JSON response of the test results for tests that
+  are publicly visible.
+
+  Called via ajax in the frontend code, which is responsible for rendering the
+  test results on the page.
+  """
 
   course = Course.query.filter_by(name=course_name).first()
 

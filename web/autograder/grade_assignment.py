@@ -7,6 +7,19 @@ from autograder.models import Unittest, Testfile
 from flask_sqlalchemy import get_debug_queries
 
 def grade_assignment(assignment, submissions):
+  """Grade all of the submissions in the given archive.
+
+  This function expects a path to a zip archive that contains a single directory
+  "Submissions" that contains a subdirectory for each student's submission. It
+  will grade each of these submissions against the test cases in the given
+  assignment, then calculate grades and produce a CSV of the results.
+
+  Note: This function is somewhat specific to Cornell CMS. The structure of
+  the generated CSV result file is made to conform to CMS's expected input.
+  This function will need to be substantially if a different spec is required
+  for the generated CSV, but fortunately this is the only part of this
+  autograder that is coded to a specific external dependency.
+  """
   csvfile = tempfile.NamedTemporaryFile(mode="w+", newline="")
   with tempfile.TemporaryDirectory() as tempdir:
     fieldnames = (['NetID']
@@ -25,11 +38,15 @@ def grade_assignment(assignment, submissions):
     for submission in os.listdir(submissions_directory):
       filenames = os.listdir(os.path.join(submissions_directory, submission))
       files = [os.path.join(submissions_directory, submission, filename) for filename in filenames]
+      # Each submission is sent to a grader server via testfile.grade to have
+      # unit tests actually compiled and run.
       grader_response = {
           testfile.filename: testfile.grade(files, public_only=False)
           for testfile in assignment.testfiles
       }
 
+      # Once we have a response from the grader, inspect the results to
+      # compute a score and write comments for the student.
       test_results = {"NetID": submission}
       comments = "## Automated test results for '" + submission + "' ##"
 
@@ -91,6 +108,11 @@ def grade_assignment(assignment, submissions):
       test_results.update(grades)
       test_results["Add Comments"] = comments
 
+      # In Cornell CMS, group submissions look like 'group_of_user1_user2'.
+      # However, the score CSV must contain a separate row for each student, and
+      # must NOT contain any group_of_ rows as the grades table stores by
+      # student rather than group. Thus, for group submissions we clone the row
+      # for each student in the group, changing the NetID each time.
       if submission.startswith("group_of_"):
         netids = submission.replace("group_of_", "").split("_")
         for netid in netids:
@@ -101,8 +123,9 @@ def grade_assignment(assignment, submissions):
         gradeswriter.writerow(test_results)
 
       # add the test results to the 'final_results' dict for calculating stats
-      # We don't need the NetID or comments though
-      del test_results["NetID"]
+      # in JavaScript on the results page. The comments aren't needed for the
+      # statistics though, so we remove them to substantially decrease the
+      # amount of data sent.
       del test_results["Add Comments"]
       test_results["_error_types"] = list(error_types)
       final_results.append(test_results)

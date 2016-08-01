@@ -10,6 +10,7 @@ Admin interface validation:
     mostly done
   handle testfile no tests on upload or gradeall
   handle grader error on upload/gradealll
+  cs3110_test module - cleanly handle Pa_ounit_lib.summarize () call
 
 Grade all results - show test pass rates
 Grade all results - show NetID of no-compile / timeout
