@@ -1,16 +1,38 @@
-TODO:
+Additional possible features / todo list:
 
 Multiple input boxes for student upload - they can submit multiple via .zip, but
   it would be nice to let them just select 2-3 files instead
-Restrict student upload filetypes / number of files
-Allow download / upload of test weights
-Admin interface validation:
-  catch sql add errors and show nice messages (unique constraints?)
-    mostly done
-  handle testfile no tests on upload or gradeall
-  handle grader error on upload/gradealll
-  cs3110_test module - cleanly handle Pa_ounit_lib.summarize () call
 
-Grade all results - tie CSV to session maybe? delete CSV at some point
+Restrict student upload filetypes / number of files (goes with the above)
+
+Allow download / upload of test weights
+  - If the same assignment is used in another course (or another offerring of
+    the same course), it'd be nice to not have to enter all the test weights
+    again. Downloading weights would also allow them to be stored in a
+    repository with the rest of the test code.
+
+Grade all results - Delete CSV at some point?
+  - The endpoint that allows download of the CSVs is restricted to those who
+    can modify the course. A different instructor could download the grades
+    if sent the link, but this is acceptable. However, it's probably not great
+    to keep these in the filesystem forever.
+    According to http://stackoverflow.com/questions/29192132/how-to-run-code-after-flask-send-file-or-send-from-directory
+    and my testing, there isn't a way to just delete the file after it's sent.
+    Best alternative is something that occaisonally scrubs the directory,
+    could be as simple as a cronjob (external to this app) that deletes
+    files with a specified age.
 
 Add some sort of progress indicator to the 'Grade All' functionality
+  - The 'Grade All' functionality can take quite a while. Thus, the user might
+    wonder if it's actually still working if it's progressed for quite a while.
+    The function would need to be partially rewritten to support the
+    EventSource interface instead of a basic POST reply to allow the JavaScript
+    page to know the progress.
+
+cs3110_test module - cleanly handle Pa_ounit_lib.summarize () call
+  - This line should not be in any test files used with this module. If it is,
+    it'd be nice to handle it gracefully.
+
+Admin interface validation:
+  What happens if the test file doesn't have any tests or fails in some other
+    manner on upload or grade_all?

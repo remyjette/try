@@ -40,6 +40,7 @@ $(function () {
       data: formData,
       processData: false,
       contentType: false,
+      //TODO errror: function() {}
       success: function(data) {
         responseDiv.html("")
           .append("<h1>Grading complete!</h1>")
