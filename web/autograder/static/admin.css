@@ -246,6 +246,12 @@ p {
   border-spacing: 30px 10px;
 }
 
+#grade_all_response .test_stat_table {
+  text-align: left;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .axis text {
   font-size: 12px;
 }

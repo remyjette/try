@@ -92,6 +92,22 @@ $(function () {
               .append(generateSummary(resultsByProblem[problem], data.problems_max[problem]));
           });
         }
+
+        var statsList = $("<table>")
+          .addClass("test_stat_table")
+          .html(_.chain(data.stats)
+            .mapObject(function(passPercent, testName) {
+              return "<tr><td>" + testName + "</td><td>" + (passPercent * 100).toFixed(2) + "%</td></tr>";
+            })
+            .values()
+            .join()
+            .value());
+        var statsDiv = $("<div><h1>Test Statistics<h1><h2>Note: Does not include no-compiles or other errors.</h2></div>")
+          .append(statsList);
+
+        $("<h1><a href='javascript:void(0)'>(View Test Statistics)</a></h1>")
+          .on('click', function() {$(this).replaceWith(statsDiv)})
+          .appendTo(responseDiv);
       }
     });
   });

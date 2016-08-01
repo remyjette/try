@@ -5,6 +5,7 @@ import tempfile
 import zipfile
 from autograder.models import Unittest, Testfile
 from flask_sqlalchemy import get_debug_queries
+from statistics import mean
 
 def grade_assignment(assignment, submissions):
   """Grade all of the submissions in the given archive.
@@ -21,6 +22,7 @@ def grade_assignment(assignment, submissions):
   autograder that is coded to a specific external dependency.
   """
   csvfile = tempfile.NamedTemporaryFile(mode="w+", newline="")
+  unittest_stats = dict()
   with tempfile.TemporaryDirectory() as tempdir:
     fieldnames = (['NetID']
         + ([p.problem_name for p in assignment.problems] if assignment.problems else ["Grade"])
@@ -79,6 +81,7 @@ def grade_assignment(assignment, submissions):
             passed = test_case["passed"]
             message = test_case["message"].partition("\n")[0] if test_case["message"] is not None else None
             score = unittest.weight if passed else 0
+            unittest_stats.setdefault(unittest.friendly_name, []).append(1 if passed else 0)
           else:
             raise Exception("Could not find a result for test '" + unittest.friendly_name + "'")
 
@@ -131,4 +134,5 @@ def grade_assignment(assignment, submissions):
       final_results.append(test_results)
 
     csvfile.seek(0)
-    return (csvfile, final_results)
+    unittest_stats = {test: mean(stat_list) for test, stat_list in unittest_stats.items()}
+    return (csvfile, final_results, unittest_stats)

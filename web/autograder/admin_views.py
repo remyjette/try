@@ -312,12 +312,12 @@ def grade_submissions(course_name, assignment_name):
   submissions_archive = request.files['submissions']
 
   csv_id= str(uuid.uuid4())
-  csvfile, final_results = grade_assignment(assignment, submissions_archive)
+  csvfile, final_results, unittest_stats = grade_assignment(assignment, submissions_archive)
   os.makedirs(assignment.grades_dir, exist_ok=True)
   shutil.copy(csvfile.name, os.path.join(assignment.grades_dir, csv_id))
   csvfile.close()
 
-  grade_response = {'csv_id': csv_id, 'results': final_results}
+  grade_response = {'csv_id': csv_id, 'results': final_results, 'stats': unittest_stats}
   if assignment.problems:
     grade_response["problems_max"] = {p.problem_name: p.score for p in assignment.problems}
     grade_response["max_score"] = sum(p.score for p in assignment.problems)
