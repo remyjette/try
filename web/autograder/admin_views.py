@@ -298,7 +298,7 @@ def grade_submissions(course_name, assignment_name):
   The archive should contain a single directory 'Submissions', which should
   contain a directory for each student's submission.
 
-  See the grade_assignment module for the implementation of the actul testing
+  See the grade_assignment module for the implementation of the actual testing
   logic - this function is merely the endpoint to receive the request and
   return the response. The respose returned has an identifier to allow the
   client to request a CSV of grade results, as well as some JSON of
