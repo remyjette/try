@@ -1,6 +1,6 @@
 from autograder import app, db
 from autograder.models import Course, Assignment, Log, Testfile, Unittest
-from flask import render_template, request, abort, flash, Blueprint
+from flask import render_template, request, abort, flash, Blueprint, g
 from werkzeug import secure_filename
 import flask
 import json

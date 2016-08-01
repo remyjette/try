@@ -106,6 +106,14 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+# Once we have a db connection, call create_all(). This is a no-op if we are
+# connecting to a database that's already set up, but if this a brand new
+# deployment this will create all the tables so later requests don't fail.
+# This also means if there's an issue with the DB connection, we know during
+# startup.
+from autograder import models
+db.create_all()
+
 # Now that app is created, pull in our views.
 from autograder.main_views import main
 from autograder.admin_views import admin
