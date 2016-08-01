@@ -15,7 +15,7 @@ The flask application is configured using config.cfg.
 
 #!/usr/bin/env python3
 
-from flask import Flask, request, flash, get_flashed_messages, session
+from flask import Flask, request, flash, get_flashed_messages, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import secure_filename
 import datetime
@@ -119,6 +119,11 @@ from autograder.main_views import main
 from autograder.admin_views import admin
 app.register_blueprint(main)
 app.register_blueprint(admin, url_prefix='/admin')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.before_request
 def _before_request():
